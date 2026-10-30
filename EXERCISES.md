@@ -1,98 +1,87 @@
-# Übungen zum Kapitel "080 - RESTful API"
+# Übungen zum Kapitel "110 - Spring Data JPA"
 
-## a) Clients
+Bisher speichert die Pizza-App Produkte, Kunden und Bestellungen mit selbst geschriebenem
+JDBC-Code (`JdbcProductRepository`, `JdbcCustomerRepository`, `JdbcOrderRepository`). In dieser
+Übung ersetzen Sie diesen Code durch Spring Data JPA.
 
-### Insomnia
+Die Tests unter `src/test/java` laufen auf diesem Branch grün. Führen Sie sie nach jedem Schritt
+aus: Am Ende müssen sie mit JPA genauso grün sein.
 
-Bei Bedarf können Sie den "Insomnia" Rest Client installieren: https://insomnia.rest/
+Das Datenbankschema in `schema.sql` bleibt unverändert. Ihre Entities müssen also zu den
+vorhandenen Tabellen und Spalten passen, nicht umgekehrt.
 
-Im Projekt ist ab diesem Branch ein exportierter Insomnia Workspace vorhanden, den Sie in das Tool
-importieren können. Damit können Sie dann komfortabel die später programmierten Endpunkte anfragen.
+## a) Build-Dateien und Konfiguration
 
-### Intellij
+Ersetzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter `spring-boot-starter-jdbc` durch
+`spring-boot-starter-data-jpa`. Warum wird der JDBC-Starter danach nicht mehr gebraucht?
 
-Ebenfalls findet sich nun die Datei `requests.http` im Projektwurzelverzeichnis. Das können Sie in
-Intellij **Ultimate** öffnen und von dort die Requests direkt mit dem grünen Pfeil ausführen lassen.
+Ergänzen Sie in der `application.properties`:
 
-### Curl
-
-Das Kommandozeilen-Tool `curl` kann wie folgt genutzt werden:
-
-- einfaches GET auf eine Adresse:
-  ````shell
-  curl http://localhost:8080/products
-  ````
-- POST mit Body, dessen Inhalt aus einer Datei gelesen werden soll:
-  ````shell
-  curl -d @<filename> http://localhost:8080/orders
-  ````
-- DELETE mit Query-String:
-  ````shell
-  curl -X DELETE http://localhost:8080/products?namePrefix=Pizza
-  ````
-
-### Sonstige Clients
-
-Alternativ können Sie zum Testen der Endpunkte natürlich auch andere Tools wie z.B. Postman nehmen.
-
-## b) OrderRestController
-
-Erstellen Sie einen API-Endpunkt `/orders/greeting` der für ein GET eine Begrüßung als String
-zurückgibt.
-
-Testen Sie die URL in Ihrem Browser: http://localhost:8080/orders/greeting
-
-## c) CustomerRestController
-
-Erstellen Sie die folgenden API-Endpunkte:
-
-* `GET /customers`, der alle Kunden zurückgibt
-* `POST /customers`, der einen neuen Kunden anlegt. Der Kunde ist durch folgenden JSON Inhalt
-  definiert:
-
-````json
-{
-  "fullName": "Enrico Pallazzo",
-  "address": {
-    "street": "Wasserstr. 123",
-    "postalCode": "40302",
-    "city": "Atlantis"
-  },
-  "phoneNumber": "+49 123 456789"
-}
+````properties
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
 ````
 
-`Customer` selbst eignet sich nicht als `@RequestBody`: Die Klasse hat zwei Konstruktoren und
-keinen Default-Konstruktor, Jackson weiß daher nicht, wie es sie erzeugen soll. Legen Sie stattdessen
-einen Record `CreateCustomerRequest` mit den drei Feldern aus dem JSON an, nehmen Sie diesen in
-der Controller-Methode entgegen und erzeugen Sie daraus den `Customer` für den `CustomerService`.
+Mit `validate` legt Hibernate kein eigenes Schema an, sondern prüft beim Start, ob Ihre Entities zu
+den Tabellen aus `schema.sql` passen. Passt etwas nicht, startet die Anwendung nicht, und die
+Fehlermeldung nennt Tabelle und Spalte. Mit `show-sql` sehen Sie das SQL, das Hibernate erzeugt.
 
-## d) ProductRestController
+## b) Produkte
 
-Erstellen Sie die folgenden API-Endpunkte:
+Machen Sie aus `Product` eine JPA-Entity. Beachten Sie dabei:
 
-* `GET /products`, der alle Produkte zurückgibt
-* `GET /products/{id}`, der das Produkt mit der angegebenen Id zurückgibt (Nutzung `@PathVariable`)
+* Die Tabelle heißt `products`, die Spalte für die Id heißt `pk`.
+* JPA braucht einen parameterlosen Konstruktor (er darf `protected` sein) und kann keine
+  `final`-Felder befüllen.
 
-## e) Erweiterung OrderRestController
+Schreiben Sie `ProductRepository` so um, dass es von `JpaRepository` erbt. Welche der bisher
+deklarierten Methoden können Sie danach aus dem Interface löschen?
 
-Erstellen Sie zusätzlich die folgenden API-Endpunkte:
+Löschen Sie anschließend `JdbcProductRepository` und `HashMapProductRepository`.
 
-* `GET /orders`, der alle Bestellungen zurückgibt
-* `POST /orders`, durch den eine neue Bestellung aufgegeben werden kann. Die Bestellung ist durch
-  folgenden JSON Inhalt definiert:
+## c) Kunden
 
-````json
-{
-  "phoneNumber": "123-4567",
-  "itemQuantities": {
-    "S-02": 1,
-    "P-10": 2,
-    "P-12": 1
-  }
-}
-````
+Machen Sie aus `Customer` eine Entity und aus `Address` ein `@Embeddable`. Die Adresse hat keine
+eigene Tabelle, ihre Felder liegen als Spalten in `customers`.
 
-Legen Sie für diesen Body eine Klasse oder einen Record `OrderRequest` mit den Feldern `phoneNumber`
-(`String`) und `itemQuantities` (`Map<String, Integer>`, Produkt-Id auf Menge) an und nehmen Sie ihn
-in der Controller-Methode per `@RequestBody` entgegen.
+Die Id eines neuen Kunden vergibt die Datenbank (`GENERATED BY DEFAULT AS IDENTITY`). Wählen Sie
+die passende `@GeneratedValue`-Strategie.
+
+`CustomerRepository` erbt ebenfalls von `JpaRepository`. Die Methode `findByPhoneNumber` bleibt
+stehen: Spring Data erzeugt die Abfrage aus dem Methodennamen.
+
+Löschen Sie `JdbcCustomerRepository` und `HashMapCustomerRepository`. Was ist danach mit dem
+parameterlosen Konstruktor von `CustomerService`?
+
+## d) Bestellungen
+
+Machen Sie aus `Order` eine Entity. Die Tabelle heißt `orders`, weil `ORDER` in SQL ein
+reserviertes Wort ist.
+
+Eine Bestellung gehört zu genau einem Kunden. Bilden Sie das mit `@ManyToOne` ab; die
+Fremdschlüssel-Spalte heißt `customer_id`. Das Feld `estimatedTimeOfDelivery` liegt in der Spalte
+`eta`.
+
+Löschen Sie `JdbcOrderRepository`. Die Methoden `setId` in `Customer` und `Order` und die
+Konstruktoren mit Id-Parameter brauchte nur der JDBC-Code; sie können weg.
+
+Starten Sie die Anwendung (`PizzaApp`) und rufen Sie `GET /orders` und `GET /customers` auf.
+Schauen Sie sich im Log an, welches SQL Hibernate dafür absetzt.
+
+## e) Bonus: eigene Abfragen
+
+Ergänzen Sie das `OrderRepository` um
+
+* eine abgeleitete Abfrage, die alle Bestellungen eines Kunden anhand seiner Telefonnummer liefert
+  (Tipp: Abfragen können Assoziationen folgen, `findByCustomer...`), und
+* eine Abfrage mit `@Query` in JPQL, die den Gesamtumsatz eines Kunden summiert.
+
+Bieten Sie beides als Methode im `OrderService` an und prüfen Sie es mit einem Test.
+
+## f) Bonus: Projection
+
+Für eine Telefonliste werden nur Name und Telefonnummer der Kunden gebraucht. Legen Sie dafür einen
+Record `CustomerContact` an und ergänzen Sie im `CustomerRepository` eine Methode, die alle Kunden
+nach Namen sortiert als `List<CustomerContact>` liefert.
+
+Welches SQL setzt Hibernate dafür ab, verglichen mit `findAll()`?

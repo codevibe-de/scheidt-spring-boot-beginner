@@ -12,7 +12,7 @@
 
     <groupId>de.codevibe</groupId>
     <artifactId>pizza-app</artifactId>
-    <version>080</version>
+    <version>110</version>
     <packaging>jar</packaging>
 
     <properties>
