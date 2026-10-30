@@ -28,6 +28,8 @@ public class Customer {
 
     private String phoneNumber;
 
+    private String email;
+
     //
     // --- constructors ---
     //
@@ -64,6 +66,14 @@ public class Customer {
         return address;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     //
     // --- other methods ---
     //
@@ -88,6 +98,7 @@ public class Customer {
                 ", fullName='" + fullName + '\'' +
                 ", address=" + address +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }

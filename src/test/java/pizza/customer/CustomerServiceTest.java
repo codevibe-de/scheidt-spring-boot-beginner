@@ -43,6 +43,21 @@ class CustomerServiceTest {
                 .isEqualTo(new Address("Schlossallee 1", "88776", "Monopolhausen"));
     }
 
+    // Übung c)
+    @Test
+    void createCustomerWithEmail() {
+        // given
+        Customer customer = new Customer("Ada Lovelace", new Address("Hauptstr. 1", "97070", "Würzburg"), "0931-1815");
+        customer.setEmail("ada@example.com");
+
+        // when
+        customerService.createCustomer(customer);
+
+        // then -- die E-Mail-Adresse kommt aus der Spalte, die V2 angelegt hat
+        Assertions.assertThat(customerService.getCustomerByPhoneNumber("0931-1815").getEmail())
+                .isEqualTo("ada@example.com");
+    }
+
     // Bonus f)
     @Test
     void getCustomerContacts() {
