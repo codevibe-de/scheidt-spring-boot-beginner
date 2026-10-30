@@ -1,23 +1,34 @@
 package pizza.order;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
+import pizza.product.ProductNotFoundException;
 import pizza.product.ProductService;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.util.Arrays;
+import java.util.Map;
 
 // Übung a): Unit-Test ohne Spring -- kein Kontext, die Abhängigkeiten sind Mocks
+@ExtendWith(MockitoExtension.class)
 class OrderServiceUnitTest {
 
-    // TODO a) Mocks für OrderRepository, CustomerService und ProductService
+    @Mock
     OrderRepository orderRepository;
 
+    @Mock
     CustomerService customerService;
 
+    @Mock
     ProductService productService;
 
     OrderService orderService;
@@ -36,19 +47,38 @@ class OrderServiceUnitTest {
         // die Id vergibt sonst die Datenbank
         customer = new Customer("Enrico Pallazzo", null, "+49 123 456789");
         ReflectionTestUtils.setField(customer, "id", 42L);
-
-        // TODO a) customerService soll für "+49 123 456789" diesen Kunden liefern
+        Mockito.when(customerService.getCustomerByPhoneNumber("+49 123 456789")).thenReturn(customer);
     }
 
     @Test
     void placeOrder_appliesDiscount() {
-        // TODO a) Preis 11.00 für 2 x P-10, save() gibt die übergebene Bestellung zurück;
-        //         erwartet: 9.90, der Zähler wurde erhöht, die Bestellung gespeichert
+        // given
+        Mockito.when(productService.getTotalPrice(Map.of("P-10", 2))).thenReturn(new BigDecimal("11.00"));
+        Mockito.when(orderRepository.save(Mockito.any(Order.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Order order = orderService.placeOrder("+49 123 456789", Map.of("P-10", 2));
+
+        // then -- 11.00 abzüglich 10 % Rabatt
+        Assertions.assertThat(order.getTotalPrice()).isEqualByComparingTo("9.90");
+        Assertions.assertThat(order.getCustomer()).isSameAs(customer);
+        Mockito.verify(customerService).increaseOrderCount(42L);
+        Mockito.verify(orderRepository).save(order);
     }
 
     @Test
     void placeOrderForUnknownProduct_savesNothing() {
-        // TODO a) der ProductService wirft eine ProductNotFoundException;
-        //         erwartet: die Exception, der Zähler wurde erhöht, das OrderRepository nie benutzt
+        // given
+        Mockito.when(productService.getTotalPrice(Map.of("X-99", 1)))
+                .thenThrow(new ProductNotFoundException("X-99"));
+
+        // when
+        Assertions.assertThatThrownBy(() -> orderService.placeOrder("+49 123 456789", Map.of("X-99", 1)))
+                .isInstanceOf(ProductNotFoundException.class);
+
+        // then -- der Versuch zählt, gespeichert wird nichts
+        Mockito.verify(customerService).increaseOrderCount(42L);
+        Mockito.verifyNoInteractions(orderRepository);
     }
 }
