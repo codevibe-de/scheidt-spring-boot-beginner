@@ -46,6 +46,8 @@ Warum wäre der DataLoader `sample` hier keine gute Wahl? Denken Sie an den zwei
 Starten Sie `PizzaApp` mit dem Profil `h2server` und öffnen Sie die H2-Konsole unter
 http://localhost:8082 (JDBC-URL wie oben, Benutzer `sa`, kein Passwort). Was steht in der Tabelle
 `flyway_schema_history`?
+H2 schreibt den Namen klein, im SQL braucht er deshalb Anführungszeichen:
+`SELECT * FROM "flyway_schema_history"`.
 
 Starten Sie die Anwendung ein zweites Mal. Was meldet Flyway jetzt?
 
