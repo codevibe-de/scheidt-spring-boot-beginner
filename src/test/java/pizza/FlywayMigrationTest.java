@@ -22,7 +22,8 @@ class FlywayMigrationTest {
     void allMigrationsApplied() {
         assertThat(flyway.info().applied())
                 .extracting(MigrationInfo::getScript)
-                .containsExactly("V1__create_tables.sql", "V2__add_customer_email.sql");
+                .containsExactly("V1__create_tables.sql", "V2__add_customer_email.sql",
+                        "V3__add_customer_order_count.sql");
         assertThat(flyway.info().pending()).isEmpty();
     }
 }

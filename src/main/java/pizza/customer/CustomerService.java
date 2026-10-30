@@ -39,4 +39,11 @@ public class CustomerService {
         return this.customerRepository.findAllByOrderByFullName();
     }
 
+    public void increaseOrderCount(long customerId) {
+        Customer customer = this.customerRepository
+                .findById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException("For id `" + customerId + "`"));
+        customer.increaseOrderCount();
+    }
+
 }

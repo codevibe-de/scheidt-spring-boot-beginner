@@ -30,6 +30,11 @@ public class Customer {
 
     private String email;
 
+    /**
+     * Anzahl der Bestellversuche, auch der gescheiterten.
+     */
+    private int orderCount;
+
     //
     // --- constructors ---
     //
@@ -74,9 +79,17 @@ public class Customer {
         this.email = email;
     }
 
+    public int getOrderCount() {
+        return orderCount;
+    }
+
     //
     // --- other methods ---
     //
+
+    public void increaseOrderCount() {
+        this.orderCount++;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -99,6 +112,7 @@ public class Customer {
                 ", address=" + address +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
+                ", orderCount=" + orderCount +
                 '}';
     }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE customers ADD COLUMN order_count INT DEFAULT 0 NOT NULL;
