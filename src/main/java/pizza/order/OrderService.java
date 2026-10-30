@@ -2,6 +2,7 @@ package pizza.order;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
 import pizza.product.ProductService;
@@ -64,9 +65,14 @@ public class OrderService {
      * @return the {@link Order} entity which contains the total price and estimated time of
      * delivery
      */
+    @Transactional
     public Order placeOrder(String phoneNumber, Map<String, Integer> productQuantities) {
         // make sure customer exists -- throws exception if it doesn't
         Customer customer = this.customerService.getCustomerByPhoneNumber(phoneNumber);
+
+        // Übung a) bis c): der Versuch zählt in einer eigenen Transaktion und übersteht so einen
+        // Rollback der Bestellung; der Aufruf muss dafür über den Proxy einer anderen Bean gehen (Bonus d)
+        this.customerService.increaseOrderCount(customer.getId());
 
         // calculate total price
         BigDecimal totalPrice = this.productService.getTotalPrice(productQuantities);

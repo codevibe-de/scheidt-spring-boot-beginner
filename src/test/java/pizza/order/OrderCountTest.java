@@ -1,7 +1,6 @@
 package pizza.order;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,7 +29,6 @@ class OrderCountTest {
     @Autowired
     CustomerRepository customerRepository;
 
-    @Disabled("Übung a)")
     @Test
     void placeOrder_increasesOrderCount() {
         // given
@@ -43,7 +41,6 @@ class OrderCountTest {
         Assertions.assertThat(orderCountOf(customer)).isEqualTo(1);
     }
 
-    @Disabled("Übung a)")
     @Test
     void placeOrderForUnknownProduct_increasesOrderCountAnyway() {
         // given
