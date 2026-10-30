@@ -43,6 +43,24 @@ Zähler in der Datenbank wirklich gestiegen ist. Macht der Spy die Transaktion a
 Führen Sie danach alle Tests aus und zählen Sie im Log die Zeilen `Started ...Test in`. Wie viele
 Kontexte startet Spring, und warum?
 
+Tipp: Mit dem Logger `org.springframework.test.context.cache` auf `DEBUG` schreibt Spring nach
+jeder Testklasse eine Statistik des Kontext-Caches (`size`, `hitCount`, `missCount`). Am
+einfachsten setzen Sie ihn über eine Umgebungsvariable, die Maven und Gradle an die Tests
+weiterreichen:
+
+````shell
+# macOS, Linux
+LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_TEST_CONTEXT_CACHE=DEBUG ./mvnw test
+
+# Windows PowerShell
+$env:LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_TEST_CONTEXT_CACHE="DEBUG"; ./mvnw test
+````
+
+Mit Maven geht auch `./mvnw test -Dlogging.level.org.springframework.test.context.cache=DEBUG`;
+Gradle reicht `-D` nicht an die Tests weiter. Gradle zeigt die Ausgabe der Tests außerdem nicht in
+der Konsole, sie steht im Bericht `build/reports/tests/test/index.html`. In IntelliJ tragen Sie
+die Variable in der Run Configuration unter *Environment variables* ein.
+
 ## c) Ein Slice für JPA
 
 Schreiben Sie einen Test `pizza.order.OrderRepositoryTest` mit `@DataJpaTest` für die beiden
