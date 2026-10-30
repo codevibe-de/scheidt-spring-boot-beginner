@@ -1,37 +1,51 @@
 package pizza.order;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import pizza.customer.Customer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "orders")
 public class Order {
 
     //
     // --- fields ---
     //
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private final Customer customer;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
-    private final BigDecimal totalPrice;
+    private BigDecimal totalPrice;
 
-    private final LocalDateTime estimatedTimeOfDelivery;
+    @Column(name = "eta")
+    private LocalDateTime estimatedTimeOfDelivery;
 
     //
     // --- constructors ---
     //
 
-    public Order(Customer customer, BigDecimal totalPrice, LocalDateTime estimatedTimeOfDelivery) {
-        this.customer = customer;
-        this.totalPrice = totalPrice;
-        this.estimatedTimeOfDelivery = estimatedTimeOfDelivery;
+    /**
+     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     */
+    protected Order() {
     }
 
-    public Order(Long id, Customer customer, BigDecimal totalPrice, LocalDateTime estimatedTimeOfDelivery) {
-        this.id = id;
+    public Order(Customer customer, BigDecimal totalPrice, LocalDateTime estimatedTimeOfDelivery) {
         this.customer = customer;
         this.totalPrice = totalPrice;
         this.estimatedTimeOfDelivery = estimatedTimeOfDelivery;
@@ -40,13 +54,6 @@ public class Order {
     //
     // --- get / set ---
     //
-
-    public void setId(long id) {
-        if (this.id != null) {
-            throw new IllegalStateException("Cannot change existing id");
-        }
-        this.id = id;
-    }
 
     public Long getId() {
         return id;

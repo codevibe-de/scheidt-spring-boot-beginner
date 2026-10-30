@@ -1,23 +1,38 @@
 package pizza.product;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Entity
+@Table(name = "products")
 public class Product {
 
     //
     // --- fields ---
     //
 
-    private final String id;
+    @Id
+    @Column(name = "pk")
+    private String id;
 
-    private final String name;
+    private String name;
 
-    private final BigDecimal price;
+    private BigDecimal price;
 
     //
     // --- constructors ---
     //
+
+    /**
+     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     */
+    protected Product() {
+    }
 
     public Product(String id, String name, BigDecimal price) {
         this.id = id;

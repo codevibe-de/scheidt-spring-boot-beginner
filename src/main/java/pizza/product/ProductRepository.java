@@ -1,16 +1,10 @@
 package pizza.product;
 
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ProductRepository {
-
-    Product save(Product product);
-
-    boolean existsById(String id);
-
-    List<Product> findAll();
-
-    Optional<Product> findById(String id);
-
+/**
+ * Spring Data erzeugt die Implementierung zur Laufzeit; {@code save}, {@code existsById},
+ * {@code findAll} und {@code findById} erbt das Interface von {@link JpaRepository}.
+ */
+public interface ProductRepository extends JpaRepository<Product, String> {
 }

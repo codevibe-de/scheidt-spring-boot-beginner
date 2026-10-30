@@ -1,22 +1,31 @@
 package pizza.customer;
 
+import jakarta.persistence.Embeddable;
+
 import java.util.Objects;
 
+@Embeddable
 public class Address {
 
     //
     // --- fields ---
     //
 
-    private final String street;
+    private String street;
 
-    private final String postalCode;
+    private String postalCode;
 
-    private final String city;
+    private String city;
 
     //
     // --- constructors ---
     //
+
+    /**
+     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     */
+    protected Address() {
+    }
 
     public Address(String street, String postalCode, String city) {
         this.street = street;

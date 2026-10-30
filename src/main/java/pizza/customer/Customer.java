@@ -1,33 +1,44 @@
 package pizza.customer;
 
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.util.Objects;
 
+@Entity
+@Table(name = "customers")
 public class Customer {
 
     //
     // --- fields ---
     //
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private final String fullName;
+    private String fullName;
 
-    private final Address address;
+    @Embedded
+    private Address address;
 
-    private final String phoneNumber;
+    private String phoneNumber;
 
     //
     // --- constructors ---
     //
 
-    public Customer(String fullName, Address address, String phoneNumber) {
-        this.fullName = fullName;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
+    /**
+     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     */
+    protected Customer() {
     }
 
-    public Customer(Long id, String fullName, Address address, String phoneNumber) {
-        this.id = id;
+    public Customer(String fullName, Address address, String phoneNumber) {
         this.fullName = fullName;
         this.address = address;
         this.phoneNumber = phoneNumber;
@@ -39,13 +50,6 @@ public class Customer {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        if (this.id != null) {
-            throw new IllegalStateException("Cannot change existing id");
-        }
-        this.id = id;
     }
 
     public String getFullName() {

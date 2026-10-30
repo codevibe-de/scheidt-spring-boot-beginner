@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -99,5 +100,13 @@ public class OrderService {
 
     public Iterable<Order> getOrders() {
         return this.orderRepository.findAll();
+    }
+
+    public List<Order> getOrdersOfCustomer(String phoneNumber) {
+        return this.orderRepository.findByCustomerPhoneNumber(phoneNumber);
+    }
+
+    public BigDecimal getTotalRevenueOfCustomer(String phoneNumber) {
+        return this.orderRepository.sumTotalPriceByPhoneNumber(phoneNumber);
     }
 }

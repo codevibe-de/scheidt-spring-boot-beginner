@@ -44,6 +44,21 @@ class OrderServiceTest {
         Assertions.assertThat(orderService.getOrders()).contains(order);
     }
 
+    // Bonus e)
+    @Test
+    void getOrdersAndRevenueOfCustomer() {
+        // given -- zwei Bestellungen von Elizabeth Magie: 2 * 7.50 = 15.00 und 1 * 8.90 = 8.90
+        orderService.placeOrder("+1 77 551237", Map.of("P-11", 2));
+        orderService.placeOrder("+1 77 551237", Map.of("S-03", 1));
+
+        // then
+        Assertions.assertThat(orderService.getOrdersOfCustomer("+1 77 551237"))
+                .hasSize(2)
+                .allSatisfy(order -> Assertions.assertThat(order.getCustomer().getFullName()).isEqualTo("Elizabeth Magie"));
+        Assertions.assertThat(orderService.getTotalRevenueOfCustomer("+1 77 551237")).isEqualByComparingTo("23.90");
+        Assertions.assertThat(orderService.getTotalRevenueOfCustomer("0000")).isEqualByComparingTo("0");
+    }
+
     @Test
     void placeOrderForUnknownCustomer() {
         Assertions.assertThatThrownBy(() -> orderService.placeOrder("0000", Map.of("P-10", 1)))

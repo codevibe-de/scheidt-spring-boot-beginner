@@ -1,6 +1,5 @@
 package pizza.customer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,17 +13,6 @@ public class CustomerService {
     // constructors and setup
     //
 
-    /**
-     * Without a database, e.g. for the slide examples of the early chapters.
-     */
-    public CustomerService() {
-        this(new HashMapCustomerRepository());
-    }
-
-    /**
-     * With more than one constructor, Spring needs to be told which one to use.
-     */
-    @Autowired
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
@@ -45,6 +33,10 @@ public class CustomerService {
 
     public Customer createCustomer(Customer customer) {
         return this.customerRepository.save(customer);
+    }
+
+    public List<CustomerContact> getCustomerContacts() {
+        return this.customerRepository.findAllByOrderByFullName();
     }
 
 }

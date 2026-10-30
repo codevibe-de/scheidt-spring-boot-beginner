@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Comparator;
+
 // @SpringBootTest boots the context via SpringApplication (like the real app), so Boot's
 // CommandLineRunners — including the DataLoadRunner — actually run. The "test" profile keeps
 // the noisy LogicRunner out (see @Profile("!test") on it).
@@ -39,5 +41,13 @@ class CustomerServiceTest {
         Assertions.assertThat(customer.getFullName()).isEqualTo("Elizabeth Magie");
         Assertions.assertThat(customer.getAddress())
                 .isEqualTo(new Address("Schlossallee 1", "88776", "Monopolhausen"));
+    }
+
+    // Bonus f)
+    @Test
+    void getCustomerContacts() {
+        Assertions.assertThat(customerService.getCustomerContacts())
+                .contains(new CustomerContact("Elizabeth Magie", "+1 77 551237"))
+                .isSortedAccordingTo(Comparator.comparing(CustomerContact::fullName));
     }
 }
