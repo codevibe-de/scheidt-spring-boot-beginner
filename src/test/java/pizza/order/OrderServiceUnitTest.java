@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
-import pizza.delivery.DeliveryClient;
+import pizza.delivery.DeliveryTimeClient;
 import pizza.product.ProductNotFoundException;
 import pizza.product.ProductService;
 
@@ -33,7 +33,7 @@ class OrderServiceUnitTest {
     ProductService productService;
 
     @Mock
-    DeliveryClient deliveryClient;
+    DeliveryTimeClient deliveryTimeClient;
 
     OrderService orderService;
 
@@ -46,7 +46,7 @@ class OrderServiceUnitTest {
                 30,
                 Arrays.stream(DayOfWeek.values()).map(DayOfWeek::name).toList(),
                 10.0);
-        orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryClient);
+        orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryTimeClient);
 
         // die Id vergibt sonst die Datenbank
         customer = new Customer("Enrico Pallazzo", null, "+49 123 456789");

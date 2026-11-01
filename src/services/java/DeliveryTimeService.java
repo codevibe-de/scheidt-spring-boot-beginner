@@ -9,22 +9,23 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 /**
- * Ein kleiner Lieferdienst für Kapitel 150: Er schätzt die Lieferzeit für eine Postleitzahl.
+ * Der Lieferzeit-Dienst für Kapitel 150, ein externer Analysedienst: Er schätzt die Lieferzeit für
+ * eine Postleitzahl.
  *
  * <p>Start ohne Build, nur mit dem JDK:
  * <pre>
- * java src/services/java/DeliveryService.java        (Port 8081)
- * java src/services/java/DeliveryService.java 9090   (anderer Port)
+ * java src/services/java/DeliveryTimeService.java        (Port 8081)
+ * java src/services/java/DeliveryTimeService.java 9090   (anderer Port)
  * </pre>
  *
- * <p>{@code GET /estimates?postalCode=40302} liefert {@code {"postalCode":"40302","minutes":25}}.
- * Der Dienst kennt nur einige Liefergebiete (die ersten beiden Ziffern der Postleitzahl), für alle
+ * <p>{@code GET /estimates?postalCode=40302} liefert {@code {"postalCode":"40302","minutes":27}}.
+ * Der Dienst hat nur für einige Gebiete Daten (die ersten beiden Ziffern der Postleitzahl), für alle
  * anderen antwortet er mit 404. Das Gebiet 99 ist überlastet: Die Antwort kommt erst nach
  * 5 Sekunden.
  */
-public class DeliveryService {
+public class DeliveryTimeService {
 
-    // Liefergebiet (erste zwei Ziffern) -> Grundlieferzeit in Minuten
+    // Gebiet (erste zwei Ziffern) -> Grundlieferzeit in Minuten
     static final Map<String, Integer> AREAS = Map.of(
             "40", 25,
             "88", 40,
@@ -38,10 +39,10 @@ public class DeliveryService {
     public static void main(String[] args) throws IOException {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8081;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/estimates", DeliveryService::handleEstimate);
+        server.createContext("/estimates", DeliveryTimeService::handleEstimate);
         server.setExecutor(Executors.newCachedThreadPool()); // der langsame Fall blockiert sonst alle anderen
         server.start();
-        System.out.println("Lieferdienst läuft auf http://localhost:" + port + "/estimates?postalCode=40302");
+        System.out.println("Lieferzeit-Dienst läuft auf http://localhost:" + port + "/estimates?postalCode=40302");
     }
 
     static void handleEstimate(HttpExchange exchange) throws IOException {
@@ -59,7 +60,7 @@ public class DeliveryService {
             String area = postalCode.substring(0, 2);
             Integer baseMinutes = AREAS.get(area);
             if (baseMinutes == null) {
-                send(exchange, 404, problem(404, "Not Found", "Kein Liefergebiet: " + postalCode));
+                send(exchange, 404, problem(404, "Not Found", "Keine Daten für " + postalCode));
                 return;
             }
             if (SLOW_AREA.equals(area)) {
