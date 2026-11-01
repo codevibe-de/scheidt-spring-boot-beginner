@@ -34,16 +34,16 @@ class CustomerServiceTest {
 
     @Test
     void getCustomerByPhoneNumber() {
-        // when -- Kunde aus den Beispieldaten des DataLoader "sample"
+        // when -- customer from the sample data of the DataLoader "sample"
         Customer customer = customerService.getCustomerByPhoneNumber("+1 77 551237");
 
-        // then -- auch die Adresse muss vollständig aus der Datenbank kommen
+        // then -- the address must come back from the database completely as well
         Assertions.assertThat(customer.getFullName()).isEqualTo("Elizabeth Magie");
         Assertions.assertThat(customer.getAddress())
                 .isEqualTo(new Address("Schlossallee 1", "88776", "Monopolhausen"));
     }
 
-    // Übung c)
+    // exercise c)
     @Test
     void createCustomerWithEmail() {
         // given
@@ -53,12 +53,12 @@ class CustomerServiceTest {
         // when
         customerService.createCustomer(customer);
 
-        // then -- die E-Mail-Adresse kommt aus der Spalte, die V2 angelegt hat
+        // then -- the email address comes from the column V2 created
         Assertions.assertThat(customerService.getCustomerByPhoneNumber("0931-1815").getEmail())
                 .isEqualTo("ada@example.com");
     }
 
-    // Bonus f)
+    // bonus f)
     @Test
     void getCustomerContacts() {
         Assertions.assertThat(customerService.getCustomerContacts())

@@ -41,8 +41,8 @@ public class CustomerService {
         return this.customerRepository.findAllByOrderByFullName();
     }
 
-    // Übung a): in der Transaktion ist der Kunde "managed", die Änderung wird beim Commit ohne save() geschrieben.
-    // Übung c): REQUIRES_NEW hält die Transaktion des Aufrufers an und committet den Zähler unabhängig von ihr.
+    // exercise a): inside the transaction the customer is "managed", the change is written on commit without save().
+    // exercise c): REQUIRES_NEW suspends the caller's transaction and commits the counter independently of it.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void increaseOrderCount(long customerId) {
         Customer customer = this.customerRepository

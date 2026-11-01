@@ -3,7 +3,7 @@ package pizza.order;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// Übung c): Die API gibt nur heraus, was der Aufrufer braucht, nicht die Entity samt Kunde.
+// exercise c): the API only returns what the caller needs, not the entity with its customer.
 public record OrderResponse(
         Long id,
         String phoneNumber,

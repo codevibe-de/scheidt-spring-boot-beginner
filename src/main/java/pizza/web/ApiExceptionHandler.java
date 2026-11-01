@@ -16,9 +16,9 @@ import pizza.product.ProductNotFoundException;
 import java.util.Map;
 import java.util.TreeMap;
 
-// Übung a): fachliche Exceptions als ProblemDetail (RFC 9457) mit passendem Status statt HTTP 500.
-// Übung b): ResponseEntityExceptionHandler liefert die Spring-MVC-Exceptions, etwa einen
-// Validierungsfehler, ebenfalls als ProblemDetail; wir ergänzen dort die Feldfehler.
+// exercise a): business exceptions as ProblemDetail (RFC 9457) with a fitting status instead of HTTP 500.
+// exercise b): ResponseEntityExceptionHandler returns the Spring MVC exceptions, e.g. a
+// validation error, as ProblemDetail as well; we add the field errors there.
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
