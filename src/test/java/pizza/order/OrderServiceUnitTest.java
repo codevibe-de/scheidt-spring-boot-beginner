@@ -12,7 +12,7 @@ import org.springframework.web.client.ResourceAccessException;
 import pizza.customer.Address;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
-import pizza.delivery.DeliveryClient;
+import pizza.delivery.DeliveryTimeClient;
 import pizza.product.ProductNotFoundException;
 import pizza.product.ProductService;
 
@@ -36,7 +36,7 @@ class OrderServiceUnitTest {
     ProductService productService;
 
     @Mock
-    DeliveryClient deliveryClient;
+    DeliveryTimeClient deliveryTimeClient;
 
     OrderService orderService;
 
@@ -49,7 +49,7 @@ class OrderServiceUnitTest {
                 30,
                 Arrays.stream(DayOfWeek.values()).map(DayOfWeek::name).toList(),
                 10.0);
-        orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryClient);
+        orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryTimeClient);
 
         // die Id vergibt sonst die Datenbank
         customer = new Customer("Enrico Pallazzo", new Address("Wasserstr. 123", "40302", "Atlantis"), "+49 123 456789");
@@ -90,9 +90,9 @@ class OrderServiceUnitTest {
     }
 
     @Test
-    void placeOrder_takesDeliveryTimeFromDeliveryService() {
-        // given -- der Lieferdienst antwortet für 40302 mit 45 Minuten
-        Mockito.when(deliveryClient.getDeliveryTimeInMinutes("40302")).thenReturn(45);
+    void placeOrder_takesDeliveryTimeFromDeliveryTimeService() {
+        // given -- der Lieferzeit-Dienst antwortet für 40302 mit 45 Minuten
+        Mockito.when(deliveryTimeClient.getDeliveryTimeInMinutes("40302")).thenReturn(45);
         Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -106,9 +106,9 @@ class OrderServiceUnitTest {
     }
 
     @Test
-    void placeOrder_fallsBackWhenDeliveryServiceFails() {
-        // given -- der Lieferdienst ist nicht erreichbar
-        Mockito.when(deliveryClient.getDeliveryTimeInMinutes("40302"))
+    void placeOrder_fallsBackWhenDeliveryTimeServiceFails() {
+        // given -- der Lieferzeit-Dienst ist nicht erreichbar
+        Mockito.when(deliveryTimeClient.getDeliveryTimeInMinutes("40302"))
                 .thenThrow(new ResourceAccessException("Connection refused"));
         Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))

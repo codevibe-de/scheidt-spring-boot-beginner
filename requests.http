@@ -93,10 +93,10 @@ GET http://localhost:8080/
 
 ### --- Kapitel 150 ---
 
-### Lieferdienst direkt (vorher starten: java src/services/java/DeliveryService.java)
+### Lieferzeit-Dienst direkt (vorher starten: java src/services/java/DeliveryTimeService.java)
 GET http://localhost:8081/estimates?postalCode=40302
 
-### a) Bestellung, Kunde im Liefergebiet 40
+### a) Bestellung, Kunde im Gebiet 40
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -107,7 +107,7 @@ Content-Type: application/json
   }
 }
 
-### b) Kunde außerhalb der Liefergebiete
+### b) Kunde außerhalb der bekannten Gebiete
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -121,7 +121,7 @@ Content-Type: application/json
   "phoneNumber": "+49 30 12345"
 }
 
-### b) Bestellung, der Lieferdienst antwortet mit 404
+### b) Bestellung, der Lieferzeit-Dienst antwortet mit 404
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -132,7 +132,7 @@ Content-Type: application/json
   }
 }
 
-### b) Kunde im überlasteten Liefergebiet 99
+### b) Kunde im überlasteten Gebiet 99
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -146,7 +146,7 @@ Content-Type: application/json
   "phoneNumber": "+49 361 99084"
 }
 
-### b) Bestellung, der Lieferdienst braucht 5 Sekunden
+### b) Bestellung, der Lieferzeit-Dienst braucht 5 Sekunden
 POST http://localhost:8080/orders
 Content-Type: application/json
 

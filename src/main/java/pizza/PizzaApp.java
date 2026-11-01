@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.web.service.registry.ImportHttpServices;
-import pizza.delivery.DeliveryApi;
+import pizza.delivery.DeliveryTimeApi;
 
 /**
  * Spring Boot entry point.
@@ -20,7 +20,7 @@ import pizza.delivery.DeliveryApi;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
-@ImportHttpServices(group = "delivery", types = DeliveryApi.class) // Bonus c)
+@ImportHttpServices(group = "delivery-time", types = DeliveryTimeApi.class) // Bonus c)
 public class PizzaApp {
 
     public static void main(String[] args) {

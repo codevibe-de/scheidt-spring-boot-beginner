@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClientException;
 import pizza.customer.Address;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
-import pizza.delivery.DeliveryClient;
+import pizza.delivery.DeliveryTimeClient;
 import pizza.product.ProductService;
 
 import java.math.BigDecimal;
@@ -36,18 +36,18 @@ public class OrderService {
 
     private final ProductService productService;
 
-    private final DeliveryClient deliveryClient;
+    private final DeliveryTimeClient deliveryTimeClient;
 
     //
     // constructors and setup
     //
 
-    public OrderService(OrderRepository orderRepository, OrderProperties orderProperties, CustomerService customerService, ProductService productService, DeliveryClient deliveryClient) {
+    public OrderService(OrderRepository orderRepository, OrderProperties orderProperties, CustomerService customerService, ProductService productService, DeliveryTimeClient deliveryTimeClient) {
         this.orderRepository = orderRepository;
         this.orderProperties = orderProperties;
         this.customerService = customerService;
         this.productService = productService;
-        this.deliveryClient = deliveryClient;
+        this.deliveryTimeClient = deliveryTimeClient;
     }
 
     @PostConstruct
@@ -105,17 +105,17 @@ public class OrderService {
         return this.orderRepository.save(order);
     }
 
-    // Übung a): die Lieferzeit beim Lieferdienst erfragen, b): Rückfallwert, wenn er nicht antwortet
+    // Übung a): die Lieferzeit beim Lieferzeit-Dienst erfragen, b): Rückfallwert, wenn er nicht antwortet
     private int getDeliveryTimeInMinutes(Customer customer) {
         Address address = customer.getAddress();
         if (address == null || address.getPostalCode() == null) {
             return this.orderProperties.deliveryTimeInMinutes();
         }
         try {
-            return this.deliveryClient.getDeliveryTimeInMinutes(address.getPostalCode());
+            return this.deliveryTimeClient.getDeliveryTimeInMinutes(address.getPostalCode());
         } catch (RestClientException e) {
-            // 404, Lieferdienst nicht erreichbar, Timeout: die Bestellung soll daran nicht scheitern
-            log.warn("Keine Lieferzeit vom Lieferdienst für {}, nehme {} Minuten: {}",
+            // 404, Lieferzeit-Dienst nicht erreichbar, Timeout: die Bestellung soll daran nicht scheitern
+            log.warn("Keine Schätzung vom Lieferzeit-Dienst für {}, nehme {} Minuten: {}",
                     address.getPostalCode(), this.orderProperties.deliveryTimeInMinutes(), e.toString());
             return this.orderProperties.deliveryTimeInMinutes();
         }
