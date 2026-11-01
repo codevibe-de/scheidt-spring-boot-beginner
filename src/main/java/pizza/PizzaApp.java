@@ -20,7 +20,7 @@ import pizza.delivery.DeliveryTimeApi;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
-@ImportHttpServices(group = "delivery-time", types = DeliveryTimeApi.class) // Bonus c)
+@ImportHttpServices(group = "delivery-time", types = DeliveryTimeApi.class) // bonus c)
 public class PizzaApp {
 
     public static void main(String[] args) {

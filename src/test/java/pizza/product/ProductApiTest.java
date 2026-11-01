@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
-// Bonus d): dasselbe Interface, das der Controller implementiert, als Client gegen die laufende App
+// bonus d): the interface the controller implements, used as a client against the running app
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductApiTest {
 

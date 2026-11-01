@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
- * Fragt den Lieferzeit-Dienst (siehe {@code src/services/java/DeliveryTimeService.java}) nach der
- * Lieferzeit für eine Postleitzahl.
+ * Asks the delivery time service (see {@code src/services/java/DeliveryTimeService.java}) for the
+ * delivery time to a postal code.
  */
 @Component
 public class DeliveryTimeClient {
@@ -18,20 +18,20 @@ public class DeliveryTimeClient {
     public DeliveryTimeClient(RestClient.Builder restClientBuilder,
                               @Value("${app.delivery-time.base-url}") String baseUrl,
                               DeliveryTimeApi deliveryTimeApi) {
-        // der Builder von Boot kennt schon die Message-Converter und die Timeouts
-        // aus spring.http.clients.*
+        // Boot's builder already knows the message converters and the timeouts
+        // from spring.http.clients.*
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .build();
         this.deliveryTimeApi = deliveryTimeApi;
     }
 
-    // Bonus c): über das HTTP-Interface
+    // bonus c): via the HTTP interface
     public int getDeliveryTimeInMinutes(String postalCode) {
         return this.deliveryTimeApi.getEstimate(postalCode).minutes();
     }
 
-    // Übung a): dasselbe von Hand mit dem RestClient
+    // exercise a): the same by hand with the RestClient
     int getDeliveryTimeInMinutesWithRestClient(String postalCode) {
         DeliveryEstimate estimate = this.restClient.get()
                 .uri("/estimates?postalCode={postalCode}", postalCode)

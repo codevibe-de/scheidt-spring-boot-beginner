@@ -7,9 +7,9 @@ import org.springframework.web.service.annotation.HttpExchange;
 import java.util.List;
 
 /**
- * Bonus d): die HTTP-Abbildung der Produkt-API als Interface. Der {@link ProductRestController}
- * implementiert es auf der Server-Seite, ein Client kann daraus mit {@code HttpServiceProxyFactory}
- * einen Proxy erzeugen (siehe {@code ProductApiTest}).
+ * Bonus d): the HTTP mapping of the product API as an interface. {@link ProductRestController}
+ * implements it on the server side; a client can create a proxy from it with
+ * {@code HttpServiceProxyFactory} (see {@code ProductApiTest}).
  */
 @HttpExchange("/products")
 public interface ProductApi {

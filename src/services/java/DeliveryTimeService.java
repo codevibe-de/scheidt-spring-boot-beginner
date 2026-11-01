@@ -9,23 +9,22 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 /**
- * Der Lieferzeit-Dienst für Kapitel 150, ein externer Analysedienst: Er schätzt die Lieferzeit für
- * eine Postleitzahl.
+ * The delivery time service for chapter 150, an external analysis service: it estimates the delivery
+ * time for a postal code.
  *
- * <p>Start ohne Build, nur mit dem JDK:
+ * <p>Runs without a build, with the JDK alone:
  * <pre>
- * java src/services/java/DeliveryTimeService.java        (Port 8081)
- * java src/services/java/DeliveryTimeService.java 9090   (anderer Port)
+ * java src/services/java/DeliveryTimeService.java        (port 8081)
+ * java src/services/java/DeliveryTimeService.java 9090   (another port)
  * </pre>
  *
- * <p>{@code GET /estimates?postalCode=40302} liefert {@code {"postalCode":"40302","minutes":27}}.
- * Der Dienst hat nur für einige Gebiete Daten (die ersten beiden Ziffern der Postleitzahl), für alle
- * anderen antwortet er mit 404. Das Gebiet 99 ist überlastet: Die Antwort kommt erst nach
- * 5 Sekunden.
+ * <p>{@code GET /estimates?postalCode=40302} returns {@code {"postalCode":"40302","minutes":27}}.
+ * The service only has data for some areas (the first two digits of the postal code) and answers
+ * 404 for all others. Area 99 is overloaded: its answer takes 5 seconds.
  */
 public class DeliveryTimeService {
 
-    // Gebiet (erste zwei Ziffern) -> Grundlieferzeit in Minuten
+    // area (first two digits) -> base delivery time in minutes
     static final Map<String, Integer> AREAS = Map.of(
             "40", 25,
             "88", 40,
@@ -40,33 +39,33 @@ public class DeliveryTimeService {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8081;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/estimates", DeliveryTimeService::handleEstimate);
-        server.setExecutor(Executors.newCachedThreadPool()); // der langsame Fall blockiert sonst alle anderen
+        server.setExecutor(Executors.newCachedThreadPool()); // otherwise the slow area blocks all other requests
         server.start();
-        System.out.println("Lieferzeit-Dienst läuft auf http://localhost:" + port + "/estimates?postalCode=40302");
+        System.out.println("Delivery time service running on http://localhost:" + port + "/estimates?postalCode=40302");
     }
 
     static void handleEstimate(HttpExchange exchange) throws IOException {
         try (exchange) {
             if (!"GET".equals(exchange.getRequestMethod())) {
-                send(exchange, 405, problem(405, "Method Not Allowed", "Nur GET"));
+                send(exchange, 405, problem(405, "Method Not Allowed", "GET only"));
                 return;
             }
             String postalCode = queryParam(exchange, "postalCode");
             System.out.println("GET /estimates?postalCode=" + postalCode);
             if (postalCode == null || !postalCode.matches("\\d{5}")) {
-                send(exchange, 400, problem(400, "Bad Request", "postalCode muss fünfstellig sein"));
+                send(exchange, 400, problem(400, "Bad Request", "postalCode must have five digits"));
                 return;
             }
             String area = postalCode.substring(0, 2);
             Integer baseMinutes = AREAS.get(area);
             if (baseMinutes == null) {
-                send(exchange, 404, problem(404, "Not Found", "Keine Daten für " + postalCode));
+                send(exchange, 404, problem(404, "Not Found", "No data for postal code " + postalCode));
                 return;
             }
             if (SLOW_AREA.equals(area)) {
                 sleep(SLOW_DELAY_MILLIS);
             }
-            // etwas Streuung innerhalb des Gebiets, aber für dieselbe Postleitzahl immer gleich
+            // some spread within an area, but always the same for the same postal code
             int minutes = baseMinutes + Integer.parseInt(postalCode.substring(3)) % 10;
             send(exchange, 200, """
                     {"postalCode":"%s","minutes":%d}""".formatted(postalCode, minutes));

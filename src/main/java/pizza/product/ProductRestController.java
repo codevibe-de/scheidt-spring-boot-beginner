@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-// Bonus d): die Abbildung auf URLs steht in ProductApi, hier nur noch die Implementierung
+// bonus d): the URL mapping lives in ProductApi, only the implementation is left here
 @RestController
 public class ProductRestController implements ProductApi {
 

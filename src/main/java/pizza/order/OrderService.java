@@ -105,7 +105,7 @@ public class OrderService {
         return this.orderRepository.save(order);
     }
 
-    // Übung a): die Lieferzeit beim Lieferzeit-Dienst erfragen, b): Rückfallwert, wenn er nicht antwortet
+    // exercise a): ask the delivery time service, b): fall back to the property if it does not answer
     private int getDeliveryTimeInMinutes(Customer customer) {
         Address address = customer.getAddress();
         if (address == null || address.getPostalCode() == null) {
@@ -114,8 +114,8 @@ public class OrderService {
         try {
             return this.deliveryTimeClient.getDeliveryTimeInMinutes(address.getPostalCode());
         } catch (RestClientException e) {
-            // 404, Lieferzeit-Dienst nicht erreichbar, Timeout: die Bestellung soll daran nicht scheitern
-            log.warn("Keine Schätzung vom Lieferzeit-Dienst für {}, nehme {} Minuten: {}",
+            // 404, service unreachable, timeout: the order must not fail because of it
+            log.warn("No estimate from the delivery time service for {}, using {} minutes: {}",
                     address.getPostalCode(), this.orderProperties.deliveryTimeInMinutes(), e.toString());
             return this.orderProperties.deliveryTimeInMinutes();
         }

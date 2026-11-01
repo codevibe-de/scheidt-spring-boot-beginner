@@ -91,7 +91,7 @@ class OrderServiceUnitTest {
 
     @Test
     void placeOrder_takesDeliveryTimeFromDeliveryTimeService() {
-        // given -- der Lieferzeit-Dienst antwortet für 40302 mit 45 Minuten
+        // given -- the delivery time service answers 45 minutes for 40302
         Mockito.when(deliveryTimeClient.getDeliveryTimeInMinutes("40302")).thenReturn(45);
         Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))
@@ -107,7 +107,7 @@ class OrderServiceUnitTest {
 
     @Test
     void placeOrder_fallsBackWhenDeliveryTimeServiceFails() {
-        // given -- der Lieferzeit-Dienst ist nicht erreichbar
+        // given -- the delivery time service is unreachable
         Mockito.when(deliveryTimeClient.getDeliveryTimeInMinutes("40302"))
                 .thenThrow(new ResourceAccessException("Connection refused"));
         Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
@@ -117,7 +117,7 @@ class OrderServiceUnitTest {
         // when
         Order order = orderService.placeOrder("+49 123 456789", Map.of("P-10", 1));
 
-        // then -- 30 Minuten aus den OrderProperties
+        // then -- 30 minutes from the OrderProperties
         Assertions.assertThat(order.getEstimatedTimeOfDelivery())
                 .isBetween(LocalDateTime.now().plusMinutes(29), LocalDateTime.now().plusMinutes(31));
     }
