@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-// Übung b): voller Kontext, aber der ProductService ist ein Mock und der CustomerService ein Spy
+// exercise b): full context, but the ProductService is a mock and the CustomerService a spy
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = "app.order.discount-days=")
@@ -15,18 +15,18 @@ class OrderServiceMockBeanTest {
     @Autowired
     OrderService orderService;
 
-    // TODO b) ProductService als Mock, CustomerService als Spy
+    // TODO b) ProductService as a mock, CustomerService as a spy
 
     @Test
     void placeOrder_usesPriceFromProductService() {
-        // TODO b) Preis 10.00 für 1 x P-10, Bestellung für "+49 123 456789";
-        //         erwartet: 10.00 und genau ein Aufruf von increaseOrderCount()
+        // TODO b) price 10.00 for 1 x P-10, order for "+49 123 456789";
+        //         expected: 10.00 and exactly one call of increaseOrderCount()
     }
 
     @Test
     void placeOrderForUnknownProduct_countsAttemptOnce() {
-        // TODO b) der ProductService wirft für jede Bestellung eine ProductNotFoundException;
-        //         Bestellung für "+1 77 551237"; erwartet: genau ein Aufruf von increaseOrderCount(),
-        //         und der Zähler in der Datenbank ist um eins gestiegen
+        // TODO b) the ProductService throws a ProductNotFoundException for every order;
+        //         order for "+1 77 551237"; expected: exactly one call of increaseOrderCount(),
+        //         and the counter in the database went up by one
     }
 }
