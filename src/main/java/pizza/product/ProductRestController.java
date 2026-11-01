@@ -1,19 +1,12 @@
 package pizza.product;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+// Bonus d): die Abbildung auf URLs steht in ProductApi, hier nur noch die Implementierung
 @RestController
-public class ProductRestController {
-
-    //
-    // --- constants ---
-    //
-
-    public static final String ROOT = "/products";
-    public static final String GET_ONE_PATH = ROOT + "/{id}";
-    public static final String GET_MANY_PATH = ROOT;
+public class ProductRestController implements ProductApi {
 
     //
     // --- injected beans ---
@@ -33,13 +26,13 @@ public class ProductRestController {
     // --- REST endpoints ---
     //
 
-    @GetMapping(GET_ONE_PATH)
-    public Product getProduct(@PathVariable("id") String productId) {
+    @Override
+    public Product getProduct(String productId) {
         return this.productService.getProduct(productId);
     }
 
-    @GetMapping(GET_MANY_PATH)
-    public Iterable<Product> getProducts() {
+    @Override
+    public List<Product> getProducts() {
         return this.productService.getAllProducts();
     }
 }

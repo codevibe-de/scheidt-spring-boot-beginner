@@ -1,8 +1,12 @@
 package pizza.order;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
+import pizza.customer.Address;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
 import pizza.delivery.DeliveryClient;
@@ -17,6 +21,8 @@ import java.util.Map;
 
 @Service
 public class OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     //
     // injected beans
@@ -101,7 +107,18 @@ public class OrderService {
 
     // Übung a): die Lieferzeit beim Lieferdienst erfragen, b): Rückfallwert, wenn er nicht antwortet
     private int getDeliveryTimeInMinutes(Customer customer) {
-        return this.orderProperties.deliveryTimeInMinutes();
+        Address address = customer.getAddress();
+        if (address == null || address.getPostalCode() == null) {
+            return this.orderProperties.deliveryTimeInMinutes();
+        }
+        try {
+            return this.deliveryClient.getDeliveryTimeInMinutes(address.getPostalCode());
+        } catch (RestClientException e) {
+            // 404, Lieferdienst nicht erreichbar, Timeout: die Bestellung soll daran nicht scheitern
+            log.warn("Keine Lieferzeit vom Lieferdienst für {}, nehme {} Minuten: {}",
+                    address.getPostalCode(), this.orderProperties.deliveryTimeInMinutes(), e.toString());
+            return this.orderProperties.deliveryTimeInMinutes();
+        }
     }
 
     private double getTodaysDiscountRate() {

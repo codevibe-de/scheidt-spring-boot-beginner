@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.ResourceAccessException;
+import pizza.customer.Address;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
 import pizza.delivery.DeliveryClient;
@@ -16,6 +18,7 @@ import pizza.product.ProductService;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -49,7 +52,7 @@ class OrderServiceUnitTest {
         orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryClient);
 
         // die Id vergibt sonst die Datenbank
-        customer = new Customer("Enrico Pallazzo", null, "+49 123 456789");
+        customer = new Customer("Enrico Pallazzo", new Address("Wasserstr. 123", "40302", "Atlantis"), "+49 123 456789");
         ReflectionTestUtils.setField(customer, "id", 42L);
         Mockito.when(customerService.getCustomerByPhoneNumber("+49 123 456789")).thenReturn(customer);
     }
@@ -84,5 +87,38 @@ class OrderServiceUnitTest {
         // then -- der Versuch zählt, gespeichert wird nichts
         Mockito.verify(customerService).increaseOrderCount(42L);
         Mockito.verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void placeOrder_takesDeliveryTimeFromDeliveryService() {
+        // given -- der Lieferdienst antwortet für 40302 mit 45 Minuten
+        Mockito.when(deliveryClient.getDeliveryTimeInMinutes("40302")).thenReturn(45);
+        Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
+        Mockito.when(orderRepository.save(Mockito.any(Order.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Order order = orderService.placeOrder("+49 123 456789", Map.of("P-10", 1));
+
+        // then
+        Assertions.assertThat(order.getEstimatedTimeOfDelivery())
+                .isBetween(LocalDateTime.now().plusMinutes(44), LocalDateTime.now().plusMinutes(46));
+    }
+
+    @Test
+    void placeOrder_fallsBackWhenDeliveryServiceFails() {
+        // given -- der Lieferdienst ist nicht erreichbar
+        Mockito.when(deliveryClient.getDeliveryTimeInMinutes("40302"))
+                .thenThrow(new ResourceAccessException("Connection refused"));
+        Mockito.when(productService.getTotalPrice(Map.of("P-10", 1))).thenReturn(new BigDecimal("5.50"));
+        Mockito.when(orderRepository.save(Mockito.any(Order.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Order order = orderService.placeOrder("+49 123 456789", Map.of("P-10", 1));
+
+        // then -- 30 Minuten aus den OrderProperties
+        Assertions.assertThat(order.getEstimatedTimeOfDelivery())
+                .isBetween(LocalDateTime.now().plusMinutes(29), LocalDateTime.now().plusMinutes(31));
     }
 }
