@@ -72,7 +72,7 @@
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Bonus d): Testcontainers mit PostgreSQL -->
+        <!-- bonus d): Testcontainers with PostgreSQL -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>

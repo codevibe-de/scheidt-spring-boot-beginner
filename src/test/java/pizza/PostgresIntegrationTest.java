@@ -16,8 +16,8 @@ import pizza.order.OrderService;
 
 import java.util.Map;
 
-// Bonus d): dieselben Migrationen und Abläufe gegen ein echtes PostgreSQL im Container;
-// ohne Docker wird die Klasse übersprungen statt rot
+// bonus d): the same migrations and flows against a real PostgreSQL in a container;
+// without Docker the class is skipped instead of failing
 @SpringBootTest
 @ActiveProfiles("test")
 @Testcontainers(disabledWithoutDocker = true)

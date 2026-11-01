@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
-// Übung a): Unit-Test ohne Spring -- kein Kontext, die Abhängigkeiten sind Mocks
+// exercise a): unit test without Spring -- no context, the dependencies are mocks
 @ExtendWith(MockitoExtension.class)
 class OrderServiceUnitTest {
 
@@ -44,14 +44,14 @@ class OrderServiceUnitTest {
 
     @BeforeEach
     void setUp() {
-        // Rabatt an allen Wochentagen, damit der Test nicht vom heutigen Tag abhängt
+        // discount on all weekdays so that the test does not depend on today's day
         OrderProperties orderProperties = new OrderProperties(
                 30,
                 Arrays.stream(DayOfWeek.values()).map(DayOfWeek::name).toList(),
                 10.0);
         orderService = new OrderService(orderRepository, orderProperties, customerService, productService, deliveryTimeClient);
 
-        // die Id vergibt sonst die Datenbank
+        // the database assigns the id otherwise
         customer = new Customer("Enrico Pallazzo", new Address("Wasserstr. 123", "40302", "Atlantis"), "+49 123 456789");
         ReflectionTestUtils.setField(customer, "id", 42L);
         Mockito.when(customerService.getCustomerByPhoneNumber("+49 123 456789")).thenReturn(customer);
@@ -67,7 +67,7 @@ class OrderServiceUnitTest {
         // when
         Order order = orderService.placeOrder("+49 123 456789", Map.of("P-10", 2));
 
-        // then -- 11.00 abzüglich 10 % Rabatt
+        // then -- 11.00 minus 10 % discount
         Assertions.assertThat(order.getTotalPrice()).isEqualByComparingTo("9.90");
         Assertions.assertThat(order.getCustomer()).isSameAs(customer);
         Mockito.verify(customerService).increaseOrderCount(42L);
@@ -84,7 +84,7 @@ class OrderServiceUnitTest {
         Assertions.assertThatThrownBy(() -> orderService.placeOrder("+49 123 456789", Map.of("X-99", 1)))
                 .isInstanceOf(ProductNotFoundException.class);
 
-        // then -- der Versuch zählt, gespeichert wird nichts
+        // then -- the attempt counts, nothing is saved
         Mockito.verify(customerService).increaseOrderCount(42L);
         Mockito.verifyNoInteractions(orderRepository);
     }

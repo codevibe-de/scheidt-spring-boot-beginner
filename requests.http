@@ -40,12 +40,12 @@ Content-Type: application/json
   }
 }
 
-### --- Kapitel 140 ---
+### --- chapter 140 ---
 
-### a) unbekanntes Produkt
+### a) unknown product
 GET http://localhost:8080/products/X-99
 
-### a) unbekannter Kunde
+### a) unknown customer
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -56,7 +56,7 @@ Content-Type: application/json
   }
 }
 
-### b) ungültiger Kunde
+### b) invalid customer
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -66,7 +66,7 @@ Content-Type: application/json
   "email": "keine-adresse"
 }
 
-### b) gültiger Kunde mit E-Mail
+### b) valid customer with email
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -76,7 +76,7 @@ Content-Type: application/json
   "email": "erika@example.com"
 }
 
-### b) ungültige Mengen
+### b) invalid quantities
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -88,15 +88,15 @@ Content-Type: application/json
   }
 }
 
-### d) statische Startseite
+### d) static start page
 GET http://localhost:8080/
 
-### --- Kapitel 150 ---
+### --- chapter 150 ---
 
-### Lieferzeit-Dienst direkt (vorher starten: java src/services/java/DeliveryTimeService.java)
+### delivery time service directly (start it first: java src/services/java/DeliveryTimeService.java)
 GET http://localhost:8081/estimates?postalCode=40302
 
-### a) Bestellung, Kunde im Gebiet 40
+### a) order, customer in area 40
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -107,7 +107,7 @@ Content-Type: application/json
   }
 }
 
-### b) Kunde außerhalb der bekannten Gebiete
+### b) customer outside the known areas
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -121,7 +121,7 @@ Content-Type: application/json
   "phoneNumber": "+49 30 12345"
 }
 
-### b) Bestellung, der Lieferzeit-Dienst antwortet mit 404
+### b) order, the delivery time service answers 404
 POST http://localhost:8080/orders
 Content-Type: application/json
 
@@ -132,7 +132,7 @@ Content-Type: application/json
   }
 }
 
-### b) Kunde im überlasteten Gebiet 99
+### b) customer in the overloaded area 99
 POST http://localhost:8080/customers
 Content-Type: application/json
 
@@ -146,7 +146,7 @@ Content-Type: application/json
   "phoneNumber": "+49 361 99084"
 }
 
-### b) Bestellung, der Lieferzeit-Dienst braucht 5 Sekunden
+### b) order, the delivery time service takes 5 seconds
 POST http://localhost:8080/orders
 Content-Type: application/json
 
