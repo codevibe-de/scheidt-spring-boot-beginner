@@ -9,8 +9,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Übung a) und c): Boot hat beim Start alle Migrationen aus db/migration angewendet,
-// die Beispieldaten aus db/sample-data (Bonus d) gibt es nur im Profil "h2server".
+// exercises a) and c): on startup Boot applied all migrations from db/migration;
+// the sample data from db/sample-data (bonus d) only exists in the profile "h2server".
 @SpringBootTest
 @ActiveProfiles("test")
 class FlywayMigrationTest {

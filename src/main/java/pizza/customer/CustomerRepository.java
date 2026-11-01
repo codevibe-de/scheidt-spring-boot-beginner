@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    // abgeleitete Abfrage: Spring Data erzeugt die Query aus dem Methodennamen
+    // derived query: Spring Data creates the query from the method name
     Optional<Customer> findByPhoneNumber(String phoneNumber);
 
-    // Bonus f): Projection auf einen Record, Hibernate liest nur die beiden Spalten
+    // bonus f): projection onto a record, Hibernate reads only the two columns
     List<CustomerContact> findAllByOrderByFullName();
 }
