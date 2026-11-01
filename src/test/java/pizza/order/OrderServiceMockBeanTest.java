@@ -17,8 +17,8 @@ import pizza.product.ProductService;
 import java.math.BigDecimal;
 import java.util.Map;
 
-// Übung b): voller Kontext, aber der ProductService ist ein Mock und der CustomerService ein Spy.
-// Beides ändert den Kontext: Spring startet für diese Klasse einen eigenen statt den gecachten.
+// exercise b): full context, but the ProductService is a mock and the CustomerService a spy.
+// Both change the context: Spring starts a separate one for this class instead of the cached one.
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = "app.order.discount-days=")
@@ -57,7 +57,7 @@ class OrderServiceMockBeanTest {
         Assertions.assertThatThrownBy(() -> orderService.placeOrder("+1 77 551237", Map.of("X-99", 1)))
                 .isInstanceOf(ProductNotFoundException.class);
 
-        // then -- der Spy ruft die echte Methode auf und zeichnet den Aufruf auf
+        // then -- the spy calls the real method and records the call
         Mockito.verify(customerService, Mockito.times(1)).increaseOrderCount(customer.getId());
         Assertions.assertThat(customerService.getCustomerByPhoneNumber("+1 77 551237").getOrderCount())
                 .isEqualTo(customer.getOrderCount() + 1);

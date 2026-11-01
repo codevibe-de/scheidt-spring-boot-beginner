@@ -12,7 +12,7 @@ public class OrderRequest {
     @NotBlank
     public String phoneNumber;
 
-    // Übung b): Constraints an den Werten der Map gelten für jede einzelne Menge
+    // exercise b): constraints on the values of the map apply to every single quantity
     @NotEmpty
     public Map<String, @NotNull @Positive Integer> itemQuantities;
 

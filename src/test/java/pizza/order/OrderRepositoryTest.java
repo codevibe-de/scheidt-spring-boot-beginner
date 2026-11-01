@@ -11,8 +11,8 @@ import pizza.customer.Customer;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// Übung c): Slice nur mit JPA -- Flyway legt das Schema an, der DataLoader läuft nicht,
-// jeder Test läuft in einer Transaktion und wird am Ende zurückgerollt
+// exercise c): slice with JPA only -- Flyway creates the schema, the DataLoader does not run,
+// every test runs in a transaction that is rolled back at the end
 @DataJpaTest
 class OrderRepositoryTest {
 
@@ -29,7 +29,7 @@ class OrderRepositoryTest {
         customer = entityManager.persist(new Customer("Trans Action", null, "0931 123456"));
         entityManager.persist(new Order(customer, new BigDecimal("12.50"), LocalDateTime.now()));
         entityManager.persist(new Order(customer, new BigDecimal("7.40"), LocalDateTime.now()));
-        // alles in die Datenbank schreiben und vergessen, damit die Abfragen wirklich lesen
+        // write everything to the database and forget it, so that the queries really read
         entityManager.flush();
         entityManager.clear();
     }
@@ -49,7 +49,7 @@ class OrderRepositoryTest {
 
     @Test
     void noSampleData() {
-        // der DataLoader ist kein Teil des Slice
+        // the DataLoader is not part of the slice
         Assertions.assertThat(orderRepository.count()).isEqualTo(2);
     }
 }

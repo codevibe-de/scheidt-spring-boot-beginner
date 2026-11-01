@@ -22,7 +22,7 @@ public class Address {
     //
 
     /**
-     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     * For JPA, which creates entities via reflection and fills in the fields afterwards.
      */
     protected Address() {
     }

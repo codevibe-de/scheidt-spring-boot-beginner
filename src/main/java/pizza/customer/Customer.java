@@ -31,7 +31,7 @@ public class Customer {
     private String email;
 
     /**
-     * Anzahl der Bestellversuche, auch der gescheiterten.
+     * Number of order attempts, including the failed ones.
      */
     private int orderCount;
 
@@ -40,7 +40,7 @@ public class Customer {
     //
 
     /**
-     * Für JPA, das Entities per Reflection erzeugt und die Felder danach befüllt.
+     * For JPA, which creates entities via reflection and fills in the fields afterwards.
      */
     protected Customer() {
     }
