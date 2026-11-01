@@ -1,83 +1,118 @@
-# Übungen zum Kapitel "140 - REST fortgeschritten"
+# Übungen zum Kapitel "150 - REST-Clients"
 
-Die REST-API der Pizza-App funktioniert, solange alle Anfragen stimmen. In dieser Übung bekommt
-sie eine Fehlerbehandlung, prüft ihre Eingaben und gibt bei Bestellungen nur noch heraus, was ein
-Aufrufer braucht.
+Die Pizza-App rechnet heute für jede Bestellung mit derselben Lieferzeit, dem Wert von
+`app.order.delivery-time-in-minutes`. In dieser Übung fragt sie stattdessen einen Lieferdienst, der
+die Lieferzeit aus der Postleitzahl des Kunden schätzt.
 
-Starten Sie die Anwendung und probieren Sie jeden Schritt mit den Anfragen in `requests.http` aus,
-die Anfragen zu diesem Kapitel stehen unten in der Datei. Die Tests unter `src/test/java` müssen
-nach jedem Schritt grün bleiben.
+Der Lieferdienst liegt als einzelne Java-Datei im Projekt und braucht keinen Build. Starten Sie ihn
+in einem eigenen Terminal im Projektverzeichnis:
 
-## a) Fehlerbehandlung
+````shell
+java delivery-service/DeliveryService.java
+````
 
-`GET /products/X-99` liefert heute HTTP 500, obwohl der Aufrufer nur eine unbekannte Nummer
-angegeben hat.
+Er läuft auf Port 8081 und beantwortet `GET /estimates?postalCode=40302` mit
+`{"postalCode":"40302","minutes":27}`. Er kennt nur die Liefergebiete 40, 88, 97 und 99 (die ersten
+beiden Ziffern der Postleitzahl), für alle anderen antwortet er mit 404. Das Gebiet 99 ist
+überlastet: Dort kommt die Antwort erst nach 5 Sekunden.
 
-Legen Sie eine Klasse `pizza.web.ApiExceptionHandler` mit `@RestControllerAdvice` an. Eine Methode
-mit `@ExceptionHandler` soll `ProductNotFoundException` und `CustomerNotFoundException` abfangen und
-ein `ProblemDetail` mit Status 404 zurückgeben:
+Probieren Sie jeden Schritt mit den Anfragen in `requests.http` aus, die Anfragen zu diesem Kapitel
+stehen unten in der Datei. Die Tests unter `src/test/java` müssen nach jedem Schritt grün bleiben.
+
+Vorbereitet sind die Klasse `pizza.delivery.DeliveryClient`, die schon in den `OrderService`
+injiziert wird, die Methode `getDeliveryTimeInMinutes()` im `OrderService` und die Property
+`app.delivery.base-url`.
+
+## a) Die Lieferzeit beim Lieferdienst erfragen
+
+* Ergänzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter `spring-boot-starter-restclient`.
+* Legen Sie ein Record `pizza.delivery.DeliveryEstimate` mit den Feldern `postalCode` und `minutes`
+  an.
+* Lassen Sie sich im Konstruktor von `DeliveryClient` einen `RestClient.Builder` und die Property
+  `app.delivery.base-url` injizieren. Bauen Sie daraus einen `RestClient` mit dieser Basis-URL.
+* Implementieren Sie `getDeliveryTimeInMinutes()`: `GET /estimates?postalCode=...` aufrufen, die
+  Antwort als `DeliveryEstimate` lesen und `minutes` zurückgeben.
 
 ````java
-return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+DeliveryEstimate estimate = restClient.get()
+        .uri("/estimates?postalCode={postalCode}", postalCode)
+        .retrieve()
+        .body(DeliveryEstimate.class);
 ````
 
-Welchen `Content-Type` hat die Antwort jetzt?
+* Rufen Sie den `DeliveryClient` in `OrderService#getDeliveryTimeInMinutes()` mit der Postleitzahl
+  aus der Adresse des Kunden auf. Kunden ohne Adresse bekommen weiter den Wert aus der Property.
 
-Auch `POST /orders` mit einer unbekannten Telefonnummer liefert nun 404. Ist das der richtige
-Status? Was würden Sie stattdessen wählen?
+Bestellen Sie für Enrico Pallazzo (Postleitzahl 40302). Was steht in `estimatedTimeOfDelivery`, und
+was zeigt das Terminal des Lieferdienstes?
 
-## b) Eingaben validieren
+## b) Wenn der Lieferdienst nicht antwortet
 
-Die API legt heute auch einen Kunden ohne Namen und mit der Telefonnummer "abc" an.
+Probieren Sie drei Fälle aus und beobachten Sie, was der Aufrufer von `POST /orders` bekommt:
 
-* Ergänzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter
-  `spring-boot-starter-validation`.
-* Ergänzen Sie `CreateCustomerRequest` um ein Feld `email`, damit die E-Mail aus Kapitel 115 auch
-  über die API angelegt werden kann, und übernehmen Sie sie im `CustomerRestController` mit
-  `setEmail()` in den neuen Kunden.
-* Annotieren Sie die Felder von `CreateCustomerRequest`: `fullName` darf nicht leer sein
-  (`@NotBlank`), `phoneNumber` ebenfalls und soll nur aus Ziffern, Leerzeichen und einem führenden
-  `+` bestehen (`@Pattern`), `email` muss eine gültige Adresse sein, falls angegeben (`@Email`).
-* Annotieren Sie `OrderRequest`: Die Telefonnummer darf nicht leer sein, es muss mindestens eine
-  Position geben, und jede Menge muss größer als 0 sein. Constraints für die Werte einer `Map`
-  stehen am Typparameter: `Map<String, @NotNull @Positive Integer>`.
-* Markieren Sie die beiden `@RequestBody`-Parameter in den Controllern mit `@Valid`.
+* der Kunde aus dem Gebiet 12 (`+49 30 12345` in `requests.http`, erst anlegen)
+* der Lieferdienst ist gestoppt
+* der Kunde aus dem Gebiet 99 (`+49 361 99084`, erst anlegen)
 
-Die ungültigen Anfragen liefern jetzt 400. Erfährt der Aufrufer, welches Feld falsch ist? Wo steht
-es?
+Eine Bestellung soll nicht daran scheitern, dass der Lieferdienst keine Lieferzeit liefert. Fangen
+Sie im `OrderService` die `RestClientException` ab, schreiben Sie eine Warnung ins Log und nehmen Sie
+den Wert aus `app.order.delivery-time-in-minutes`.
 
-Setzen Sie in der `application.properties` die Property `spring.mvc.problemdetails.enabled=true`.
-Was ändert sich an der Antwort?
+Gegen den langsamen Fall hilft das noch nicht. Setzen Sie in der `application.properties` einen
+Read-Timeout für alle HTTP-Clients:
 
-Damit der Aufrufer die Feldfehler bekommt, lassen Sie `ApiExceptionHandler` von
-`ResponseEntityExceptionHandler` erben und überschreiben `handleMethodArgumentNotValid()`. Die
-Feldfehler stehen in `ex.getBindingResult().getFieldErrors()`; mit
-`ex.getBody().setProperty("errors", ...)` kommen sie als zusätzliches Feld in das `ProblemDetail`.
-Rufen Sie danach die Methode der Oberklasse auf.
-
-Die Property aus dem vorigen Schritt ist jetzt wirkungslos. Warum?
-
-## c) Ein Response-DTO für Bestellungen
-
-`POST /orders` und `GET /orders` geben die `Order`-Entity zurück, samt dem kompletten Kunden mit
-Adresse, E-Mail und dem internen Zähler `orderCount`.
-
-Legen Sie ein Record `pizza.order.OrderResponse` mit `id`, `phoneNumber`, `totalPrice` und
-`estimatedTimeOfDelivery` an, dazu eine statische Methode `from(Order order)`. Lassen Sie beide
-Methoden des `OrderRestController` `OrderResponse` statt `Order` zurückgeben.
-
-Was spricht noch dagegen, Entities direkt als JSON herauszugeben?
-
-## d) Bonus: eine statische Startseite
-
-Legen Sie unter `src/main/resources/static` eine Datei `index.html` an, die die Produkte als Tabelle
-zeigt. Die Daten holt sie per JavaScript von der API:
-
-````javascript
-fetch('/products')
-    .then(response => response.json())
-    .then(products => { /* Tabellenzeilen erzeugen */ });
+````properties
+spring.http.clients.read-timeout=2s
 ````
 
-Das Stylesheet `bootstrap-5.3.3.css` liegt schon im selben Verzeichnis. Unter welcher URL ist die
-Seite erreichbar, und warum?
+Wie lange dauert die Bestellung im Gebiet 99 jetzt?
+
+`placeOrder()` ist `@Transactional`, und der Aufruf des Lieferdienstes passiert mitten in der
+Transaktion. Was bedeutet das, wenn der Lieferdienst langsam ist? Wo gehört der Aufruf besser hin?
+
+## c) Bonus: derselbe Client als HTTP-Interface
+
+Legen Sie ein Interface `pizza.delivery.DeliveryApi` an:
+
+````java
+@HttpExchange("/estimates")
+public interface DeliveryApi {
+
+    @GetExchange
+    DeliveryEstimate getEstimate(@RequestParam String postalCode);
+}
+````
+
+Spring Boot erzeugt die Implementierung, wenn Sie das Interface an `PizzaApp` importieren:
+
+````java
+@ImportHttpServices(group = "delivery", types = DeliveryApi.class)
+````
+
+Die Basis-URL der Gruppe `delivery` setzen Sie in der `application.properties`:
+
+````properties
+spring.http.serviceclient.delivery.base-url=${app.delivery.base-url}
+````
+
+Lassen Sie `DeliveryClient` statt des `RestClient` die `DeliveryApi` benutzen. Gilt der Read-Timeout
+aus b) auch hier?
+
+## d) Bonus: ein Interface für Controller und Client
+
+Ziehen Sie aus dem `ProductRestController` ein Interface `pizza.product.ProductApi` heraus, das die
+HTTP-Abbildung mit `@HttpExchange("/products")` und `@GetExchange` beschreibt, und lassen Sie den
+Controller es implementieren, ohne eigene `@GetMapping`s.
+
+Schreiben Sie einen Test `ProductApiTest` mit `@SpringBootTest(webEnvironment = RANDOM_PORT)`, der
+mit demselben Interface als Client gegen die laufende Anwendung ein Produkt abruft:
+
+````java
+RestClient restClient = RestClient.create("http://localhost:" + port);
+ProductApi client = HttpServiceProxyFactory
+        .builderFor(RestClientAdapter.create(restClient))
+        .build()
+        .createClient(ProductApi.class);
+````
+
+Für welche APIs eignet sich ein gemeinsames Interface, für welche nicht?

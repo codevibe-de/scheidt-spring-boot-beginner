@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pizza.customer.Customer;
 import pizza.customer.CustomerService;
+import pizza.delivery.DeliveryClient;
 import pizza.product.ProductService;
 
 import java.math.BigDecimal;
@@ -29,15 +30,18 @@ public class OrderService {
 
     private final ProductService productService;
 
+    private final DeliveryClient deliveryClient;
+
     //
     // constructors and setup
     //
 
-    public OrderService(OrderRepository orderRepository, OrderProperties orderProperties, CustomerService customerService, ProductService productService) {
+    public OrderService(OrderRepository orderRepository, OrderProperties orderProperties, CustomerService customerService, ProductService productService, DeliveryClient deliveryClient) {
         this.orderRepository = orderRepository;
         this.orderProperties = orderProperties;
         this.customerService = customerService;
         this.productService = productService;
+        this.deliveryClient = deliveryClient;
     }
 
     @PostConstruct
@@ -89,10 +93,15 @@ public class OrderService {
         Order order = new Order(
                 customer,
                 discountedTotalPrice,
-                LocalDateTime.now().plusMinutes(this.orderProperties.deliveryTimeInMinutes()));
+                LocalDateTime.now().plusMinutes(getDeliveryTimeInMinutes(customer)));
 
         // persist and return it
         return this.orderRepository.save(order);
+    }
+
+    // Übung a): die Lieferzeit beim Lieferdienst erfragen, b): Rückfallwert, wenn er nicht antwortet
+    private int getDeliveryTimeInMinutes(Customer customer) {
+        return this.orderProperties.deliveryTimeInMinutes();
     }
 
     private double getTodaysDiscountRate() {

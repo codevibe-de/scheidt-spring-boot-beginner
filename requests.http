@@ -90,3 +90,69 @@ Content-Type: application/json
 
 ### d) statische Startseite
 GET http://localhost:8080/
+
+### --- Kapitel 150 ---
+
+### Lieferdienst direkt (vorher starten: java delivery-service/DeliveryService.java)
+GET http://localhost:8081/estimates?postalCode=40302
+
+### a) Bestellung, Kunde im Liefergebiet 40
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "phoneNumber": "+49 123 456789",
+  "itemQuantities": {
+    "P-11": 1
+  }
+}
+
+### b) Kunde außerhalb der Liefergebiete
+POST http://localhost:8080/customers
+Content-Type: application/json
+
+{
+  "fullName": "Max Fern",
+  "address": {
+    "street": "Hauptstr. 1",
+    "postalCode": "12345",
+    "city": "Irgendwo"
+  },
+  "phoneNumber": "+49 30 12345"
+}
+
+### b) Bestellung, der Lieferdienst antwortet mit 404
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "phoneNumber": "+49 30 12345",
+  "itemQuantities": {
+    "P-11": 1
+  }
+}
+
+### b) Kunde im überlasteten Liefergebiet 99
+POST http://localhost:8080/customers
+Content-Type: application/json
+
+{
+  "fullName": "Lisa Langsam",
+  "address": {
+    "street": "Domplatz 1",
+    "postalCode": "99084",
+    "city": "Erfurt"
+  },
+  "phoneNumber": "+49 361 99084"
+}
+
+### b) Bestellung, der Lieferdienst braucht 5 Sekunden
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "phoneNumber": "+49 361 99084",
+  "itemQuantities": {
+    "P-11": 1
+  }
+}
