@@ -1,8 +1,12 @@
 package pizza.order;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class OrderRestController {
@@ -43,14 +47,17 @@ public class OrderRestController {
 
     @PostMapping(PLACE_ORDER_PATH)
     @ResponseStatus(HttpStatus.CREATED)
-    public Order placeOrder(@RequestBody OrderRequest orderRequest) {
-        return this.orderService.placeOrder(
+    public OrderResponse placeOrder(@Valid @RequestBody OrderRequest orderRequest) {
+        Order order = this.orderService.placeOrder(
                 orderRequest.phoneNumber,
                 orderRequest.itemQuantities);
+        return OrderResponse.from(order);
     }
 
     @GetMapping(GET_MANY_PATH)
-    public Iterable<Order> getOrders() {
-        return this.orderService.getOrders();
+    public List<OrderResponse> getOrders() {
+        List<OrderResponse> orders = new ArrayList<>();
+        this.orderService.getOrders().forEach(order -> orders.add(OrderResponse.from(order)));
+        return orders;
     }
 }

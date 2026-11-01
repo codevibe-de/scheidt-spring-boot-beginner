@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!-- Bonus d): statische Startseite; Boot liefert sie unter / aus, die Daten holt sie per fetch() von der API -->
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Pizza</title>
+    <link href="/bootstrap-5.3.3.css" rel="stylesheet">
+</head>
+<body class="p-5">
+<div class="container">
+    <h1>Spring Pizza</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr><th>Nr.</th><th>Name</th><th class="text-end">Preis</th></tr>
+        </thead>
+        <tbody id="products"></tbody>
+    </table>
+</div>
+<script>
+    const euro = new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'});
+    fetch('/products')
+        .then(response => response.json())
+        .then(products => {
+            document.getElementById('products').innerHTML = products
+                .map(p => `<tr><td>${p.id}</td><td>${p.name}</td><td class="text-end">${euro.format(p.price)}</td></tr>`)
+                .join('');
+        });
+</script>
+</body>
+</html>

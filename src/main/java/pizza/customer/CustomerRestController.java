@@ -1,5 +1,6 @@
 package pizza.customer;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,14 +40,14 @@ public class CustomerRestController {
 
     @PostMapping(CREATE_PATH)
     @ResponseStatus(HttpStatus.CREATED)
-    public Customer createCustomer(@RequestBody CreateCustomerRequest createCustomerRequest) {
-        return this.customerService.createCustomer(
-                new Customer(
-                        createCustomerRequest.fullName(),
-                        createCustomerRequest.address(),
-                        createCustomerRequest.phoneNumber()
-                )
+    public Customer createCustomer(@Valid @RequestBody CreateCustomerRequest createCustomerRequest) {
+        Customer customer = new Customer(
+                createCustomerRequest.fullName(),
+                createCustomerRequest.address(),
+                createCustomerRequest.phoneNumber()
         );
+        customer.setEmail(createCustomerRequest.email());
+        return this.customerService.createCustomer(customer);
     }
 
 }
