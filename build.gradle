@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.codevibe'
-version = '130'
+version = '140'
 
 java {
     toolchain {

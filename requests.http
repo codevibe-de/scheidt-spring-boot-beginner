@@ -39,3 +39,54 @@ Content-Type: application/json
     "P-12": 1
   }
 }
+
+### --- Kapitel 140 ---
+
+### a) unbekanntes Produkt
+GET http://localhost:8080/products/X-99
+
+### a) unbekannter Kunde
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "phoneNumber": "0000",
+  "itemQuantities": {
+    "P-11": 1
+  }
+}
+
+### b) ungültiger Kunde
+POST http://localhost:8080/customers
+Content-Type: application/json
+
+{
+  "fullName": "",
+  "phoneNumber": "abc",
+  "email": "keine-adresse"
+}
+
+### b) gültiger Kunde mit E-Mail
+POST http://localhost:8080/customers
+Content-Type: application/json
+
+{
+  "fullName": "Erika Muster",
+  "phoneNumber": "+49 931 4711",
+  "email": "erika@example.com"
+}
+
+### b) ungültige Mengen
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "phoneNumber": "+49 123 456789",
+  "itemQuantities": {
+    "P-11": 0,
+    "P-12": null
+  }
+}
+
+### d) statische Startseite
+GET http://localhost:8080/
