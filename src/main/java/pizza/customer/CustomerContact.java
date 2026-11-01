@@ -1,8 +1,8 @@
 package pizza.customer;
 
 /**
- * Projection für eine Telefonliste: nur Name und Telefonnummer eines {@link Customer}.
- * Die Komponenten heißen wie die Felder der Entity, daran erkennt Spring Data die Zuordnung.
+ * Projection for a phone list: only name and phone number of a {@link Customer}.
+ * The components are named like the fields of the entity; that is how Spring Data maps them.
  */
 public record CustomerContact(String fullName, String phoneNumber) {
 }

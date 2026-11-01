@@ -14,9 +14,9 @@ import pizza.product.ProductNotFoundException;
 import java.util.Map;
 import java.util.UUID;
 
-// Übung 120: Jeder Test legt einen eigenen Kunden an, damit die Bestellungen der anderen Tests
-// seinen Zähler nicht verfälschen. Gelesen wird der Zähler frisch aus der Datenbank, also so,
-// wie ihn eine andere Transaktion nach dem Commit sieht.
+// exercise 120: every test creates its own customer so that the orders of the other tests
+// do not distort its counter. The counter is read fresh from the database, i.e. the way
+// another transaction sees it after the commit.
 @SpringBootTest
 @ActiveProfiles("test")
 class OrderCountTest {
@@ -30,7 +30,7 @@ class OrderCountTest {
     @Autowired
     CustomerRepository customerRepository;
 
-    @Disabled("Übung a)")
+    @Disabled("exercise a)")
     @Test
     void placeOrder_increasesOrderCount() {
         // given
@@ -43,17 +43,17 @@ class OrderCountTest {
         Assertions.assertThat(orderCountOf(customer)).isEqualTo(1);
     }
 
-    @Disabled("Übung a)")
+    @Disabled("exercise a)")
     @Test
     void placeOrderForUnknownProduct_increasesOrderCountAnyway() {
         // given
         Customer customer = createCustomer();
 
-        // when -- das Produkt gibt es nicht, die Bestellung scheitert
+        // when -- the product does not exist, the order fails
         Assertions.assertThatThrownBy(() -> orderService.placeOrder(customer.getPhoneNumber(), Map.of("X-99", 1)))
                 .isInstanceOf(ProductNotFoundException.class);
 
-        // then -- der Versuch zählt trotzdem
+        // then -- the attempt is counted anyway
         Assertions.assertThat(orderCountOf(customer)).isEqualTo(1);
     }
 
