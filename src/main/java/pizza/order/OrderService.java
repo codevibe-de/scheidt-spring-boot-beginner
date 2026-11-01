@@ -70,8 +70,8 @@ public class OrderService {
         // make sure customer exists -- throws exception if it doesn't
         Customer customer = this.customerService.getCustomerByPhoneNumber(phoneNumber);
 
-        // Übung a) bis c): der Versuch zählt in einer eigenen Transaktion und übersteht so einen
-        // Rollback der Bestellung; der Aufruf muss dafür über den Proxy einer anderen Bean gehen (Bonus d)
+        // exercises a) to c): the attempt is counted in a transaction of its own and so survives a
+        // rollback of the order; for that the call has to go through the proxy of another bean (bonus d)
         this.customerService.increaseOrderCount(customer.getId());
 
         // calculate total price

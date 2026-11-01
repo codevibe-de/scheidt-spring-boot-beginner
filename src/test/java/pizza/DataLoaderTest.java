@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Übung c): jeder DataLoader wird über seinen Bean-Namen geholt und einzeln ausgeführt
+// exercise c): every DataLoader is looked up by its bean name and run on its own
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = "app.data-loader=none")
@@ -34,7 +34,7 @@ class DataLoaderTest {
             "sample, 6, 2",
             "csv,    6, 0"
     })
-    // ohne neuen Context scheitert "csv" an den Produkten, die "sample" schon angelegt hat
+    // without a new context "csv" fails on the products "sample" has already created
     @DirtiesContext
     void loaderCreatesData(String beanName, int products, int customers) {
         loaders.get(beanName).run();
@@ -42,7 +42,7 @@ class DataLoaderTest {
         assertThat(customerService.getAllCustomers()).hasSize(customers);
     }
 
-    // Bonus: fällt auf, wenn ein neuer Loader in der @CsvSource fehlt
+    // bonus: notices when a new loader is missing from the @CsvSource
     @Test
     void allLoadersAreCovered() {
         assertThat(loaders).containsOnlyKeys("none", "sample", "csv");
