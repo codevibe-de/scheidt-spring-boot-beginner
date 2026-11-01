@@ -13,8 +13,8 @@ import java.util.concurrent.Executors;
  *
  * <p>Start ohne Build, nur mit dem JDK:
  * <pre>
- * java delivery-service/DeliveryService.java        (Port 8081)
- * java delivery-service/DeliveryService.java 9090   (anderer Port)
+ * java src/services/java/DeliveryService.java        (Port 8081)
+ * java src/services/java/DeliveryService.java 9090   (anderer Port)
  * </pre>
  *
  * <p>{@code GET /estimates?postalCode=40302} liefert {@code {"postalCode":"40302","minutes":25}}.

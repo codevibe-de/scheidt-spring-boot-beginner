@@ -3,7 +3,7 @@ package pizza.delivery;
 import org.springframework.stereotype.Component;
 
 /**
- * Fragt den Lieferdienst (siehe {@code delivery-service/DeliveryService.java}) nach der
+ * Fragt den Lieferdienst (siehe {@code src/services/java/DeliveryService.java}) nach der
  * Lieferzeit für eine Postleitzahl.
  */
 @Component
