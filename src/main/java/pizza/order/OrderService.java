@@ -99,7 +99,7 @@ public class OrderService {
         return this.orderRepository.save(order);
     }
 
-    // Übung a): die Lieferzeit beim Lieferzeit-Dienst erfragen, b): Rückfallwert, wenn er nicht antwortet
+    // exercise a): ask the delivery time service, b): fall back to the property if it does not answer
     private int getDeliveryTimeInMinutes(Customer customer) {
         return this.orderProperties.deliveryTimeInMinutes();
     }
