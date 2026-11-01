@@ -24,7 +24,7 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        // Rabatt deaktivieren, damit der erwartete Gesamtpreis tagesunabhängig (deterministisch) ist
+        // disable the discount so that the expected total price does not depend on the day (deterministic)
         "app.order.discount-days="
 })
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -46,8 +46,8 @@ class OrderServiceTest {
             }
         });
 
-        // when -- die Produkt-Preise kommen aus dem DummyProductRepository:
-        //         2 * 8.00 (Margherita) + 1 * 10.00 (Salami) = 26.00, kein Rabatt (via @TestPropertySource abgeschaltet)
+        // when -- the product prices come from the DummyProductRepository:
+        //         2 * 8.00 (Margherita) + 1 * 10.00 (Salami) = 26.00, no discount (switched off via @TestPropertySource)
         Order order = orderService.placeOrder(
                 "+49 123 456789",
                 Map.of(
@@ -61,7 +61,7 @@ class OrderServiceTest {
         Assertions.assertThat(order.getId()).isEqualTo(1L);
         Assertions.assertThat(order.getTotalPrice()).isEqualByComparingTo(new BigDecimal("26.00"));
 
-        // und: der OrderService hält genau diese eine Bestellung
+        // and: the OrderService holds exactly this one order
         Assertions.assertThat(orderService.getOrders()).hasSize(1);
     }
 
@@ -82,9 +82,9 @@ class OrderServiceTest {
 
 
     /**
-     * Ein von Hand geschriebenes Dummy-{@link ProductRepository} mit fest verdrahteten Produkten.
-     * Ersetzt das echte Repository, damit der {@code ProductService} im Test bekannte Preise liefert
-     * (mocking-ähnliches Verhalten ohne Mocking-Framework).
+     * A hand-written dummy {@link ProductRepository} with hard-wired products.
+     * Replaces the real repository so that the {@code ProductService} returns known prices in the test
+     * (mocking-like behavior without a mocking framework).
      */
     static class DummyProductRepository implements ProductRepository {
 
