@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
- * Fragt den Lieferdienst (siehe {@code delivery-service/DeliveryService.java}) nach der
+ * Fragt den Lieferdienst (siehe {@code src/services/java/DeliveryService.java}) nach der
  * Lieferzeit für eine Postleitzahl.
  */
 @Component

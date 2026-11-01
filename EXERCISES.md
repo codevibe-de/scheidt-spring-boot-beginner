@@ -8,7 +8,7 @@ Der Lieferdienst liegt als einzelne Java-Datei im Projekt und braucht keinen Bui
 in einem eigenen Terminal im Projektverzeichnis:
 
 ````shell
-java delivery-service/DeliveryService.java
+java src/services/java/DeliveryService.java
 ````
 
 Er läuft auf Port 8081 und beantwortet `GET /estimates?postalCode=40302` mit
