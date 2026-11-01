@@ -15,7 +15,7 @@ import java.util.Map;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        // Rabatt deaktivieren, damit der erwartete Gesamtpreis tagesunabhängig (deterministisch) ist
+        // disable the discount so that the expected total price does not depend on the day (deterministic)
         "app.order.discount-days="
 })
 class OrderServiceTest {
@@ -25,8 +25,8 @@ class OrderServiceTest {
 
     @Test
     void placeOrder() {
-        // when -- die Preise kommen aus den Beispieldaten des DataLoader "sample":
-        //         2 * 5.50 (Pizza Margarita) + 1 * 7.90 (Salat Italiano) = 18.90
+        // when -- the prices come from the sample data of the DataLoader "sample":
+        //         2 * 5.50 (Pizza Margarita) + 1 * 7.90 (Italian Salad) = 18.90
         Order order = orderService.placeOrder(
                 "+49 123 456789",
                 Map.of(
@@ -40,7 +40,7 @@ class OrderServiceTest {
         Assertions.assertThat(order.getCustomer().getFullName()).isEqualTo("Enrico Pallazzo");
         Assertions.assertThat(order.getTotalPrice()).isEqualByComparingTo("18.90");
 
-        // und: die Bestellung ist gespeichert und wird wieder gefunden
+        // and: the order is saved and found again
         Assertions.assertThat(orderService.getOrders()).contains(order);
     }
 

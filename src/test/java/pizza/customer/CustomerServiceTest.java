@@ -32,10 +32,10 @@ class CustomerServiceTest {
 
     @Test
     void getCustomerByPhoneNumber() {
-        // when -- Kunde aus den Beispieldaten des DataLoader "sample"
+        // when -- customer from the sample data of the DataLoader "sample"
         Customer customer = customerService.getCustomerByPhoneNumber("+1 77 551237");
 
-        // then -- auch die Adresse muss vollständig aus der Datenbank kommen
+        // then -- the address must come back from the database completely as well
         Assertions.assertThat(customer.getFullName()).isEqualTo("Elizabeth Magie");
         Assertions.assertThat(customer.getAddress())
                 .isEqualTo(new Address("Schlossallee 1", "88776", "Monopolhausen"));
