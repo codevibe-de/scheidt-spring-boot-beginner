@@ -5,7 +5,7 @@ set namespaceSeparator ::
 package "pizza.customer" <<Frame>> {
 class CustomerService {
 + getCustomerByPhoneNumber(phone:String) : Customer
-+ getAllCustomers() : Iterable<Customer>
++ getAllCustomers() : List<Customer>
 + createCustomer(c:Customer) : Customer
 }
 }
