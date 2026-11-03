@@ -11,16 +11,16 @@ package "javax.sql" <<Frame>> {
 package "pizza.product" <<Frame>> {
 
     class ProductService {
-        createProduct(p : Product)
+        createProduct(p : Product) : Product
         getProduct(id : String) : Product
-        getAllProducts() : Iterable<Product>
-        getTotalPrice(prdQnts : Map<String,Integer>) : double
+        getAllProducts() : List<Product>
+        getTotalPrice(prdQnts : Map<String,Integer>) : BigDecimal
     }
 
     interface ProductRepository {
         save(p : Product) : Product
-        existsById(id : String) : bool
-        findAll() : Collection<Product>
+        existsById(id : String) : boolean
+        findAll() : List<Product>
         findById(id : String) : Optional<Product>
     }
 
