@@ -1,83 +1,79 @@
-# Übungen zum Kapitel "140 - REST fortgeschritten"
+# Exercises for chapter "140 - Advanced REST"
 
-Die REST-API der Pizza-App funktioniert, solange alle Anfragen stimmen. In dieser Übung bekommt
-sie eine Fehlerbehandlung, prüft ihre Eingaben und gibt bei Bestellungen nur noch heraus, was ein
-Aufrufer braucht.
+The REST API of the pizza app works as long as all requests are correct. In this exercise it gets
+error handling, validates its input and only hands out what a caller needs for orders.
 
-Starten Sie die Anwendung und probieren Sie jeden Schritt mit den Anfragen in `requests.http` aus,
-die Anfragen zu diesem Kapitel stehen unten in der Datei. Die Tests unter `src/test/java` müssen
-nach jedem Schritt grün bleiben.
+Start the application and try out every step with the requests in `requests.http`; the requests
+for this chapter are at the bottom of the file. The tests under `src/test/java` must stay green
+after every step.
 
-## a) Fehlerbehandlung
+## a) Error handling
 
-`GET /products/X-99` liefert heute HTTP 500, obwohl der Aufrufer nur eine unbekannte Nummer
-angegeben hat.
+`GET /products/X-99` currently returns HTTP 500, although the caller only gave an unknown number.
 
-Legen Sie eine Klasse `pizza.web.ApiExceptionHandler` mit `@RestControllerAdvice` an. Eine Methode
-mit `@ExceptionHandler` soll `ProductNotFoundException` und `CustomerNotFoundException` abfangen und
-ein `ProblemDetail` mit Status 404 zurückgeben:
+Create a class `pizza.web.ApiExceptionHandler` with `@RestControllerAdvice`. A method with
+`@ExceptionHandler` should catch `ProductNotFoundException` and `CustomerNotFoundException` and
+return a `ProblemDetail` with status 404:
 
 ````java
 return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
 ````
 
-Welchen `Content-Type` hat die Antwort jetzt?
+Which `Content-Type` does the response have now?
 
-Auch `POST /orders` mit einer unbekannten Telefonnummer liefert nun 404. Ist das der richtige
-Status? Was würden Sie stattdessen wählen?
+`POST /orders` with an unknown phone number now returns 404 as well. Is that the right status? What
+would you choose instead?
 
-## b) Eingaben validieren
+## b) Validating input
 
-Die API legt heute auch einen Kunden ohne Namen und mit der Telefonnummer "abc" an.
+The API currently even creates a customer without a name and with the phone number "abc".
 
-* Ergänzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter
-  `spring-boot-starter-validation`.
-* Ergänzen Sie `CreateCustomerRequest` um ein Feld `email`, damit die E-Mail aus Kapitel 115 auch
-  über die API angelegt werden kann, und übernehmen Sie sie im `CustomerRestController` mit
-  `setEmail()` in den neuen Kunden.
-* Annotieren Sie die Felder von `CreateCustomerRequest`: `fullName` darf nicht leer sein
-  (`@NotBlank`), `phoneNumber` ebenfalls und soll nur aus Ziffern, Leerzeichen und einem führenden
-  `+` bestehen (`@Pattern`), `email` muss eine gültige Adresse sein, falls angegeben (`@Email`).
-* Annotieren Sie `OrderRequest`: Die Telefonnummer darf nicht leer sein, es muss mindestens eine
-  Position geben, und jede Menge muss größer als 0 sein. Constraints für die Werte einer `Map`
-  stehen am Typparameter: `Map<String, @NotNull @Positive Integer>`.
-* Markieren Sie die beiden `@RequestBody`-Parameter in den Controllern mit `@Valid`.
+* Add the starter `spring-boot-starter-validation` to the `pom.xml`.
+* Add a field `email` to `CreateCustomerRequest`, so that the email from chapter 115 can also be
+  set via the API, and pass it on to the new customer in the `CustomerRestController` with
+  `setEmail()`.
+* Annotate the fields of `CreateCustomerRequest`: `fullName` must not be blank (`@NotBlank`),
+  neither must `phoneNumber`, which should also consist only of digits, spaces and a leading `+`
+  (`@Pattern`), and `email` must be a valid address if given (`@Email`).
+* Annotate `OrderRequest`: the phone number must not be blank, there must be at least one item, and
+  every quantity must be greater than 0. Constraints for the values of a `Map` go on the type
+  parameter: `Map<String, @NotNull @Positive Integer>`.
+* Mark the two `@RequestBody` parameters in the controllers with `@Valid`.
 
-Die ungültigen Anfragen liefern jetzt 400. Erfährt der Aufrufer, welches Feld falsch ist? Wo steht
-es?
+The invalid requests now return 400. Does the caller learn which field is wrong? Where does it say
+so?
 
-Setzen Sie in der `application.properties` die Property `spring.mvc.problemdetails.enabled=true`.
-Was ändert sich an der Antwort?
+Set the property `spring.mvc.problemdetails.enabled=true` in `application.properties`. What
+changes in the response?
 
-Damit der Aufrufer die Feldfehler bekommt, lassen Sie `ApiExceptionHandler` von
-`ResponseEntityExceptionHandler` erben und überschreiben `handleMethodArgumentNotValid()`. Die
-Feldfehler stehen in `ex.getBindingResult().getFieldErrors()`; mit
-`ex.getBody().setProperty("errors", ...)` kommen sie als zusätzliches Feld in das `ProblemDetail`.
-Rufen Sie danach die Methode der Oberklasse auf.
+To give the caller the field errors, let `ApiExceptionHandler` extend
+`ResponseEntityExceptionHandler` and override `handleMethodArgumentNotValid()`. The field errors
+are in `ex.getBindingResult().getFieldErrors()`; with `ex.getBody().setProperty("errors", ...)`
+they go into the `ProblemDetail` as an additional field. Then call the superclass method.
 
-Die Property aus dem vorigen Schritt ist jetzt wirkungslos. Warum?
+The property from the previous step now has no effect. Why?
 
-## c) Ein Response-DTO für Bestellungen
+## c) A response DTO for orders
 
-`POST /orders` und `GET /orders` geben die `Order`-Entity zurück, samt dem kompletten Kunden mit
-Adresse, E-Mail und dem internen Zähler `orderCount`.
+`POST /orders` and `GET /orders` return the `Order` entity, including the complete customer with
+address, email and the internal counter `orderCount`.
 
-Legen Sie ein Record `pizza.order.OrderResponse` mit `id`, `phoneNumber`, `totalPrice` und
-`estimatedTimeOfDelivery` an, dazu eine statische Methode `from(Order order)`. Lassen Sie beide
-Methoden des `OrderRestController` `OrderResponse` statt `Order` zurückgeben.
+Create a record `pizza.order.OrderResponse` with `id`, `phoneNumber`, `totalPrice` and
+`estimatedTimeOfDelivery`, plus a static method `from(Order order)`. Let both methods of the
+`OrderRestController` return `OrderResponse` instead of `Order`.
 
-Was spricht noch dagegen, Entities direkt als JSON herauszugeben?
+What else speaks against handing out entities directly as JSON?
 
-## d) Bonus: eine statische Startseite
+## d) Bonus: a static start page
 
-Legen Sie unter `src/main/resources/static` eine Datei `index.html` an, die die Produkte als Tabelle
-zeigt. Die Daten holt sie per JavaScript von der API:
+Create a file `index.html` under `src/main/resources/static` that shows the products as a table. It
+fetches the data from the API via JavaScript:
 
 ````javascript
 fetch('/products')
     .then(response => response.json())
-    .then(products => { /* Tabellenzeilen erzeugen */ });
+    .then(products => { /* create table rows */ });
 ````
 
-Das Stylesheet `bootstrap-5.3.3.css` liegt schon im selben Verzeichnis. Unter welcher URL ist die
-Seite erreichbar, und warum?
+The stylesheet `bootstrap-5.3.3.css` is already in the same directory. At which URL is the page
+available, and why?
