@@ -43,6 +43,8 @@ Turn `PizzaApp` into a real Spring Boot application:
 SpringApplication.run(PizzaApp.class, args);
 ```
 
+This also removes the loop in `main(...)` that called the runners. Until task c), the runners therefore stay silent.
+
 ## b) `DataSource` via auto-configuration
 
 ➡️ Delete the class `EmbeddedDataSourceConfig`.
@@ -60,17 +62,12 @@ We also replace the home-made runner mechanism and the manual property handling 
 
 ### Runners
 
-So far there is a **custom** interface `pizza.util.CommandLineRunner`, which is invoked in `PizzaApp` via an
-`@EventListener(ContextRefreshedEvent.class)`; for this, the command-line arguments are laboriously "parked" in the
-context as a bean via the record `CliArgs`.
+So far there is a **custom** interface `pizza.util.CommandLineRunner`. `main(...)` in `PizzaApp` fetched all beans
+of this type from the context and called them one after the other with the command-line arguments.
 
 ➡️ Replace the custom interface with Boot's `org.springframework.boot.CommandLineRunner`. Boot calls all beans of this
-type automatically after startup and passes the command-line arguments. This makes the following **unnecessary**, and
-they can be deleted:
-
-- the `@EventListener(ContextRefreshedEvent.class)` in `PizzaApp`,
-- the record `pizza.util.CliArgs`,
-- the condition `pizza.util.CliArgsPresentCondition` and the `@Conditional` on `LogicRunner` that uses it.
+type automatically after startup and passes the command-line arguments -- exactly what the loop in `main(...)` did by
+hand. The custom interface `pizza.util.CommandLineRunner` can then be deleted.
 
 ➡️ `DataLoadRunner` and `LogicRunner` now simply implement `org.springframework.boot.CommandLineRunner`. You can keep
 the `@Order` annotations to control the order.
