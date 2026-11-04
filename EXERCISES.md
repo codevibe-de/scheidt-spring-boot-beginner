@@ -1,33 +1,35 @@
-# Übungen zu 025 "Annotation-Config"
+# Exercises for 025 "Annotation-Config"
 
-Diese Übung besteht aus **zwei Phasen**:
+> **Starting point:** In this branch, `PizzaApp` creates its beans with Spring's XML-based container
+> (`ClassPathXmlApplicationContext` reading `src/main/resources/beans.xml`). That stems from earlier chapters of the
+> full course; in this exercise you replace it with annotations.
+
+This exercise has **two phases**:
 
 ## Phase 1
 
-Wir wollen, dass Spring nun alle Beans über Annotationen findet.
+We want Spring to find all beans through annotations from now on.
 
-Somit müssen wir:
+So we need to:
 
-1. den erstellen ApplicationContext auf `AnnotationConfigApplicationContext` ändern
-2. einen eleganten Einstiegspunkt in unsere Anwendung deklarieren, der
-   einen Component-Scan auslöst (`@Configuration` und `@ComponentScan`)
-3. die benötigten Bean-erzeugenden Annotationen in diversen Klassen hinzufügen. Sie können frei wählen, ob Sie dies per
-   Stereotypen oder Bean-Methoden machen. Oder auch gemischt …
+1. change the created ApplicationContext to `AnnotationConfigApplicationContext`
+2. declare an elegant entry point into our application that triggers a component scan (`@Configuration` and
+   `@ComponentScan`)
+3. add the required bean-defining annotations to the various classes. You are free to choose whether you do this with
+   stereotypes or with bean methods. Or a mix of both …
 
 ## Phase 2 -- optional
 
-Wie arbeiten wir nun mit den Service-Beans?
+How do we now work with the service beans?
 
-Wir können die Ausführung der Geschäftslogik so belassen wie gehabt, oder wir nutzen das bereitgestellte
-`pizza.util.CommandLineRunner` Interface. Das geht wie folgt:
+We can leave the execution of the business logic as it is, or we use the provided `pizza.util.CommandLineRunner`
+interface. This works as follows:
 
-1. Erstellung einer neuen Klasse `LogicRunner` (oder beliebiger anderer Name) im Package `pizza`, welche
-   das `CommandLineRunner` Interface implementiert.
-2. Annotation als Bean (z.B. `@Component`), damit Spring diese Klasse als Bean erkennt.
-3. Verschiebung der Geschäftslogik in die `run()` Methode dieser Klasse.
-4. Autowiring der benötigten Service-Beans in diese Klasse.
-5. Abfrage aller Beans des Typs `CommandLineRunner` in der `PizzaApp.main()` Methode und Ausführung der `run()`
-   Methoden. Besonders leicht lässt sich dies (inkl. Sortierung) mit `BeanFactory.getBeanProvider(java.lang.Class<T>)`
-   und dessen `orderedStream()` Methode realisieren. So können wir später weitere Runner anlegen und diese in
-   der gewünschten Reihenfolge ausführen lassen.
-
+1. Create a new class `LogicRunner` (or any other name) in the package `pizza` that implements the
+   `CommandLineRunner` interface.
+2. Annotate it as a bean (e.g. `@Component`) so that Spring recognises the class as a bean.
+3. Move the business logic into the `run()` method of this class.
+4. Autowire the required service beans into this class.
+5. In the `PizzaApp.main()` method, look up all beans of type `CommandLineRunner` and call their `run()` methods.
+   This is particularly easy (including ordering) with `BeanFactory.getBeanProvider(java.lang.Class<T>)` and its
+   `orderedStream()` method. That way we can add more runners later and have them run in the order we want.
