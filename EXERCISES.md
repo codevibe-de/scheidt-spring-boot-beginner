@@ -1,61 +1,57 @@
-# Übungen zum Kapitel "120 - Transaktionen"
+# Exercises for chapter "120 - Transactions"
 
-Die Pizzeria möchte wissen, wie oft ein Kunde zu bestellen versucht, auch wenn die Bestellung
-scheitert. Dafür ist auf diesem Branch schon vorbereitet:
+The pizzeria wants to know how often a customer tries to order, even when the order fails. The
+following is already prepared on this branch:
 
-* die Migration `V3__add_customer_order_count.sql` mit der Spalte `order_count` in `customers`
-* das Feld `orderCount` in `Customer` mit der Methode `increaseOrderCount()`
-* die Methode `CustomerService#increaseOrderCount(long customerId)`, die den Kunden lädt und
-  seinen Zähler erhöht
-* der Test `pizza.order.OrderCountTest` mit zwei Testmethoden, noch mit `@Disabled` abgeschaltet
+* the migration `V3__add_customer_order_count.sql` with the column `order_count` in `customers`
+* the field `orderCount` in `Customer` with the method `increaseOrderCount()`
+* the method `CustomerService#increaseOrderCount(long customerId)`, which loads the customer and
+  increases their counter
+* the test `pizza.order.OrderCountTest` with two test methods, still switched off with `@Disabled`
 
-Die übrigen Tests unter `src/test/java` laufen auf diesem Branch grün.
+The other tests under `src/test/java` pass on this branch.
 
-## a) Bestellversuche zählen
+## a) Counting order attempts
 
-Rufen Sie in `OrderService#placeOrder()` die Methode `increaseOrderCount()` des
-`CustomerService` auf, und zwar gleich nachdem der Kunde geladen wurde, also bevor die Produkte
-geladen werden.
+In `OrderService#placeOrder()`, call the method `increaseOrderCount()` of the `CustomerService`,
+right after the customer has been loaded, i.e. before the products are loaded.
 
-Entfernen Sie in `OrderCountTest` beide `@Disabled` und führen Sie den Test aus. Beide
-Testmethoden schlagen fehl, der Zähler bleibt bei 0. Warum wird die Änderung am Kunden nicht
-gespeichert, obwohl `increaseOrderCount()` sie doch macht?
+Remove both `@Disabled` in `OrderCountTest` and run the test. Both test methods fail, the counter
+stays at 0. Why is the change to the customer not saved, even though `increaseOrderCount()` makes
+it?
 
-Machen Sie `CustomerService#increaseOrderCount()` mit `@Transactional` transaktional, ohne einen
-Aufruf von `save()` zu ergänzen. Jetzt sind beide Tests grün. Wie kommt die Änderung in die
-Datenbank?
+Make `CustomerService#increaseOrderCount()` transactional with `@Transactional`, without adding a
+call to `save()`. Now both tests pass. How does the change get into the database?
 
-## b) Die Bestellung als Einheit
+## b) The order as a unit
 
-Eine Bestellung soll ganz oder gar nicht stattfinden. Annotieren Sie deshalb auch
-`OrderService#placeOrder()` mit `@Transactional`.
+An order should happen completely or not at all. So annotate `OrderService#placeOrder()` with
+`@Transactional` as well.
 
-Führen Sie `OrderCountTest` erneut aus. Welcher Test schlägt jetzt fehl, und warum? Überlegen
-Sie, in welcher Transaktion `increaseOrderCount()` jetzt läuft und was mit ihr passiert, wenn
-`placeOrder()` mit der `ProductNotFoundException` endet.
+Run `OrderCountTest` again. Which test fails now, and why? Think about which transaction
+`increaseOrderCount()` runs in now, and what happens to it when `placeOrder()` ends with the
+`ProductNotFoundException`.
 
-## c) Der Zähler in eigener Transaktion
+## c) The counter in its own transaction
 
-Ein gescheiterter Bestellversuch soll trotzdem gezählt werden. Sorgen Sie über die Propagation
-von `@Transactional` dafür, dass `increaseOrderCount()` immer in einer eigenen, neuen
-Transaktion läuft, die unabhängig von der Bestellung committet wird.
+A failed order attempt should be counted anyway. Use the propagation of `@Transactional` to make
+sure that `increaseOrderCount()` always runs in its own, new transaction, which is committed
+independently of the order.
 
-Jetzt müssen alle Tests grün sein. Was steht im Log zu den Transaktionen, wenn Sie in der
-`application.properties` testweise
-`logging.level.org.springframework.orm.jpa.JpaTransactionManager=DEBUG` setzen?
+Now all tests must pass. What does the log say about the transactions if you set
+`logging.level.org.springframework.orm.jpa.JpaTransactionManager=DEBUG` in
+`application.properties` for a test run?
 
-## d) Bonus: Aufruf innerhalb der Klasse
+## d) Bonus: calls within the class
 
-Probieren Sie aus, was passiert, wenn die neue Transaktion nicht im `CustomerService`, sondern
-im `OrderService` selbst beginnt:
+Try out what happens if the new transaction does not start in the `CustomerService` but in the
+`OrderService` itself:
 
-* Setzen Sie `increaseOrderCount()` im `CustomerService` wieder auf ein einfaches
-  `@Transactional`.
-* Legen Sie in `OrderService` eine `public` Methode `countOrderAttempt(long customerId)` an, die
-  mit `@Transactional(propagation = Propagation.REQUIRES_NEW)` annotiert ist und
-  `customerService.increaseOrderCount(customerId)` aufruft.
-* Rufen Sie in `placeOrder()` statt `customerService.increaseOrderCount()` jetzt
-  `countOrderAttempt()` auf.
+* Set `increaseOrderCount()` in the `CustomerService` back to a plain `@Transactional`.
+* In `OrderService`, create a `public` method `countOrderAttempt(long customerId)` that is
+  annotated with `@Transactional(propagation = Propagation.REQUIRES_NEW)` and calls
+  `customerService.increaseOrderCount(customerId)`.
+* In `placeOrder()`, call `countOrderAttempt()` instead of `customerService.increaseOrderCount()`.
 
-Welcher Test schlägt fehl? Warum hat die Annotation an `countOrderAttempt()` keine Wirkung?
-Nehmen Sie die Änderung danach wieder zurück.
+Which test fails? Why does the annotation on `countOrderAttempt()` have no effect? Undo the change
+afterwards.
