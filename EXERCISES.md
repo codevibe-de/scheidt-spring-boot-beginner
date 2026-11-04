@@ -1,8 +1,7 @@
 # Exercises for 025 "Annotation-Config"
 
-> **Starting point:** In this branch, `PizzaApp` creates its beans with Spring's XML-based container
-> (`ClassPathXmlApplicationContext` reading `src/main/resources/beans.xml`). That stems from earlier chapters of the
-> full course; in this exercise you replace it with annotations.
+> **Starting point:** `PizzaApp` still creates all objects by hand, exactly as in the solution of 005. Spring is
+> already on the classpath (`spring-context` in the `pom.xml`), but not used yet.
 
 This exercise has **two phases**:
 
@@ -12,7 +11,8 @@ We want Spring to find all beans through annotations from now on.
 
 So we need to:
 
-1. change the created ApplicationContext to `AnnotationConfigApplicationContext`
+1. replace the manual instantiation in `PizzaApp.main()` with an `AnnotationConfigApplicationContext` and get the
+   service beans from it
 2. declare an elegant entry point into our application that triggers a component scan (`@Configuration` and
    `@ComponentScan`)
 3. add the required bean-defining annotations to the various classes. You are free to choose whether you do this with
