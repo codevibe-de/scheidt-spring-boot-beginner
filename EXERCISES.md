@@ -10,17 +10,15 @@ aus: Sie müssen grün bleiben.
 
 ## a) Flyway einbinden
 
-Ergänzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter `spring-boot-starter-flyway`.
-Seit Spring Boot 4 reicht die Bibliothek `flyway-core` allein nicht mehr: Die Autoconfiguration
-für Flyway steckt im Modul `spring-boot-flyway`, das der Starter mitbringt.
+Fügen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter `spring-boot-starter-flyway` hinzu.
 
 Legen Sie das Verzeichnis `src/main/resources/db/migration` an und verschieben Sie `schema.sql`
-dorthin als `V1__create_tables.sql`. Entfernen Sie dabei die `DROP TABLE`-Anweisungen. Warum
+dorthin umbenannt als `V1__create_tables.sql`. Entfernen Sie dabei die `DROP TABLE`-Anweisungen. Warum
 gehören sie nicht in eine Migration?
 
 Achten Sie auf den Dateinamen: großes `V`, Versionsnummer, **zwei** Unterstriche, Beschreibung.
 
-Bauen Sie danach einmal komplett neu (`./mvnw clean` bzw. `./gradlew clean`). Sonst liegt die alte
+Bauen Sie danach einmal komplett neu (`./mvnw clean`). Sonst liegt die alte
 `schema.sql` noch unter `target/classes`, und Boot führt sie nach Flyway aus.
 
 Führen Sie die Tests aus und suchen Sie im Log die Zeilen von Flyway. Welche Migration wurde auf
