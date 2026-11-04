@@ -10,8 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  * <p>{@code @SpringBootApplication} bundles {@code @Configuration},
  * {@code @ComponentScan} (rooted at this package) and {@code @EnableAutoConfiguration}.
  * The latter is what wires up the embedded Tomcat + {@code DispatcherServlet}, the
- * H2 {@code DataSource}, Thymeleaf view resolution and Jackson — all the infrastructure
- * we previously declared by hand.
+ * H2 {@code DataSource} and Jackson — all the infrastructure we previously declared by hand.
  *
  * <p>{@link SpringApplication#run} also invokes every {@link org.springframework.boot.CommandLineRunner}
  * bean after startup, so the old {@code @EventListener(ContextRefreshedEvent)} plumbing is gone.
