@@ -5,7 +5,6 @@ import com.github.freva.asciitable.Column;
 import com.github.freva.asciitable.ColumnData;
 import com.github.freva.asciitable.HorizontalAlign;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import pizza.customer.Customer;
@@ -24,10 +23,6 @@ import static com.github.freva.asciitable.HorizontalAlign.RIGHT;
 
 @Component
 @Order(1)
-// Boot runs every CommandLineRunner on startup — but the ASCII-table output and the
-// sample order placed below are noise in tests, so this runner is excluded from the
-// "test" profile (the former CliArgsPresentCondition served the same purpose).
-@Profile("!test")
 public class LogicRunner implements CommandLineRunner {
 
     private final ProductService productService;
