@@ -1,149 +1,146 @@
-# Übungen zum Kapitel "077 - Spring Boot"
+# Exercises for chapter "077 - Spring Boot"
 
-In diesem Kapitel migrieren wir die bestehende Pizza-Anwendung auf **Spring Boot**. Bisher haben wir sämtliche
-Infrastruktur *von Hand* verdrahtet: die Erzeugung des `ApplicationContext`, das Hochziehen eines `DispatcherServlet`
-über den `AppInitializer`, die embedded `DataSource`, die komplette Thymeleaf-View-Auflösung sowie das Einlesen der
-Properties. Genau diesen handgeschriebenen "Boilerplate" nimmt uns Spring Boot über **Starter-Dependencies** und
-**Auto-Konfiguration** ab.
+In this chapter we migrate the existing pizza application to **Spring Boot**. So far, all infrastructure has been
+wired up *by hand*: creating the `ApplicationContext`, starting a `DispatcherServlet` via the `AppInitializer`, the
+embedded `DataSource`, the complete Thymeleaf view resolution, and loading the properties. Spring Boot takes exactly
+this hand-written boilerplate off our hands through **starter dependencies** and **auto-configuration**.
 
-Das Ziel dieser Übung ist es daher weniger, *neuen* Code zu schreiben, sondern vor allem **bestehenden Code wieder zu
-löschen** und durch Boot-Bordmittel zu ersetzen. Achten Sie beim Aufräumen darauf, was jeweils *automatisch* passiert,
-sobald der entsprechende Starter auf dem Classpath liegt.
+> **Starting point:** Some of this hand-written infrastructure (the web layer with Thymeleaf, the embedded
+> `DataSource`) comes from chapters of the full course that are not part of this training. You don't need to know it
+> in detail -- what matters here is seeing how much of it Boot makes unnecessary.
 
-> **Hinweis:** Wir konzentrieren uns bewusst auf einige **Kern-Themen** der Migration (Einstiegspunkt, Web-Layer,
-> DataSource, Runner/Properties). Das im nächsten Kapitel folgende REST-Thema klammern wir hier noch aus — der
-> vorhandene Thymeleaf-Controller bleibt als anschaulicher Kontrast erhalten.
+The goal of this exercise is therefore not so much to write *new* code, but above all to **delete existing code** and
+replace it with what Boot provides out of the box. While cleaning up, pay attention to what happens *automatically*
+as soon as the corresponding starter is on the classpath.
 
-## Setup (bereits vorbereitet)
+> **Note:** We deliberately focus on a few **core topics** of the migration (entry point, web layer, DataSource,
+> runners/properties). REST, which follows in the next chapter, is left out here -- the existing Thymeleaf controller
+> stays as an illustrative contrast.
 
-Folgendes wurde für Sie **bereits erledigt** — Sie müssen an den Build-Skripten nichts mehr ändern:
+## Setup (already prepared)
 
-- Die Build-Skripte (`pom.xml` / `build.gradle`) wurden auf Spring Boot umgestellt:
-  - Maven nutzt jetzt `spring-boot-starter-parent` als Parent-POM, Gradle das `org.springframework.boot`- und das
-    `io.spring.dependency-management`-Plugin.
-  - Die einzelnen `spring-*`-Abhängigkeiten und deren Versionen wurden durch **Starter** ersetzt:
+The following has **already been done** for you -- you don't need to change the build files:
+
+- The Maven build (`pom.xml`) has been switched to Spring Boot:
+  - It now uses `spring-boot-starter-parent` as its parent POM.
+  - The individual `spring-*` dependencies and their versions have been replaced by **starters**:
     `spring-boot-starter-webmvc`, `spring-boot-starter-thymeleaf`, `spring-boot-starter-jdbc`,
-    `spring-boot-starter-aspectj` sowie (für Tests) `spring-boot-starter-test`. Die Versionen verwaltet nun das
-    Boot-BOM — explizite `<version>`-Angaben entfallen.
-  - Das Packaging wurde von `war` auf `jar` umgestellt; die `jakarta.servlet-api` (Scope `provided`),
-    `failOnMissingWebXml` sowie der explizite `-parameters`-Compiler-Schalter werden nicht mehr benötigt
-    (Boot bringt all das mit).
+    `spring-boot-starter-aspectj` and (for tests) `spring-boot-starter-test`. The versions are now managed by the
+    Boot BOM -- explicit `<version>` entries are gone.
+  - The packaging has been changed from `war` to `jar`; `jakarta.servlet-api` (scope `provided`),
+    `failOnMissingWebXml` and the explicit `-parameters` compiler flag are no longer needed (Boot brings all of that).
 
-Ab hier sind **Sie** dran. Arbeiten Sie die Aufgaben am besten der Reihe nach ab und starten Sie nach jedem Schritt
-die Anwendung bzw. die Tests, um zu sehen, was Boot Ihnen bereits abgenommen hat.
+From here on it's **your** turn. Work through the tasks in order and start the application or the tests after each
+step to see what Boot has already taken off your hands.
 
-## a) Einstiegspunkt: `@SpringBootApplication`
+## a) Entry point: `@SpringBootApplication`
 
-Machen Sie aus `PizzaApp` eine echte Spring-Boot-Anwendung:
+Turn `PizzaApp` into a real Spring Boot application:
 
-➡️ Ersetzen Sie an der Klasse die Kombination aus `@Configuration` + `@ComponentScan` durch die eine
-Annotation `@SpringBootApplication` (sie enthält beides — plus `@EnableAutoConfiguration`).
+➡️ On the class, replace the combination of `@Configuration` + `@ComponentScan` with the single annotation
+`@SpringBootApplication` (it contains both -- plus `@EnableAutoConfiguration`).
 
-➡️ Ersetzen Sie in `main(...)` das manuelle Erzeugen des `AnnotationConfigApplicationContext` durch
+➡️ In `main(...)`, replace the manual creation of the `AnnotationConfigApplicationContext` with
 
 ```java
 SpringApplication.run(PizzaApp.class, args);
 ```
 
-➡️ Löschen Sie die Klasse `AppInitializer`. Ihren Job — einen `DispatcherServlet` samt eingebettetem Servlet-Container
-hochzuziehen — übernimmt jetzt die Auto-Konfiguration von `spring-boot-starter-webmvc` (embedded Tomcat auf Port `8080`).
+➡️ Delete the class `AppInitializer`. Its job -- starting a `DispatcherServlet` together with an embedded servlet
+container -- is now done by the auto-configuration of `spring-boot-starter-webmvc` (embedded Tomcat on port `8080`).
 
-## b) `DataSource` per Auto-Konfiguration
+## b) `DataSource` via auto-configuration
 
-➡️ Löschen Sie die Klasse `EmbeddedDataSourceConfig`.
+➡️ Delete the class `EmbeddedDataSourceConfig`.
 
-Sobald H2 auf dem Classpath liegt (bringt `spring-boot-starter-jdbc` in Kombination mit der H2-Dependency mit),
-konfiguriert Boot automatisch eine embedded In-Memory-`DataSource`. Zusätzlich führt Boot beim Start ein im
-Classpath-Root liegendes `schema.sql` (und optional `data.sql`) automatisch aus — genau das, was wir vorher von Hand
-über den `EmbeddedDatabaseBuilder` gemacht haben.
+As soon as H2 is on the classpath (`spring-boot-starter-jdbc` together with the H2 dependency), Boot automatically
+configures an embedded in-memory `DataSource`. In addition, Boot runs a `schema.sql` (and optionally `data.sql`) in
+the root of the classpath at startup -- exactly what we did by hand before with the `EmbeddedDatabaseBuilder`.
 
-> **Tipp:** Bleiben Sie skeptisch und schauen Sie beim Start ins Log — Boot meldet dort die angelegte H2-`DataSource`
-> und die Ausführung von `schema.sql`.
+> **Tip:** Stay sceptical and look at the log during startup -- Boot reports the H2 `DataSource` it created and the
+> execution of `schema.sql` there.
 
-## c) Web-Layer verschlanken
+## c) Slim down the web layer
 
-Die Klasse `WebConfig` ist der größte Brocken — und lässt sich zum größten Teil **löschen**:
+The class `WebConfig` is the biggest chunk -- and most of it can be **deleted**:
 
-➡️ Entfernen Sie die Annotation `@EnableWebMvc`.
+➡️ Remove the annotation `@EnableWebMvc`.
 
-> ⚠️ **Wichtig / klassische Falle:** `@EnableWebMvc` schaltet Boots MVC-Auto-Konfiguration **ab**. Solange die
-> Annotation stehen bleibt, werden weder die Thymeleaf-Views noch die statischen Ressourcen automatisch konfiguriert.
+> ⚠️ **Important / classic trap:** `@EnableWebMvc` switches Boot's MVC auto-configuration **off**. As long as the
+> annotation stays, neither the Thymeleaf views nor the static resources are configured automatically.
 
-➡️ Löschen Sie die drei Thymeleaf-Beans (`templateResolver`, `templateEngine`, `viewResolver`). Der Starter
-`spring-boot-starter-thymeleaf` konfiguriert die komplette Kette `TemplateResolver → TemplateEngine → ViewResolver`
-selbst — und erwartet die Templates standardmäßig genau dort, wo sie schon liegen: `src/main/resources/templates/`
-(Präfix `classpath:/templates/`, Suffix `.html`).
+➡️ Delete the three Thymeleaf beans (`templateResolver`, `templateEngine`, `viewResolver`). The starter
+`spring-boot-starter-thymeleaf` configures the whole chain `TemplateResolver → TemplateEngine → ViewResolver` itself
+-- and by default expects the templates exactly where they already are: `src/main/resources/templates/` (prefix
+`classpath:/templates/`, suffix `.html`).
 
-➡️ Löschen Sie die Methode `addResourceHandlers(...)`. Boot serviert statische Inhalte aus
-`src/main/resources/static/` automatisch — die `bootstrap-5.3.3.css` ist damit ohne weiteres Zutun erreichbar.
+➡️ Delete the method `addResourceHandlers(...)`. Boot serves static content from `src/main/resources/static/`
+automatically -- so `bootstrap-5.3.3.css` is reachable without any further effort.
 
-➡️ **Übrig bleibt** einzig die `LocaleResolver`-Bean (feste Locale `Locale.GERMANY`, damit das Euro-Zeichen korrekt
-gerendert wird). Für diese eine Bean gibt es keine passende Auto-Konfiguration — sie bleibt also erhalten. Überlegen
-Sie, ob die verbleibende Konfigurationsklasse noch `WebConfig` heißen oder z. B. in eine schlanke
-`LocaleConfig` umbenannt werden sollte.
+➡️ **What remains** is just the `LocaleResolver` bean (fixed locale `Locale.GERMANY`, so that the euro sign is
+rendered correctly). There is no matching auto-configuration for this one bean -- so it stays. Consider whether the
+remaining configuration class should still be called `WebConfig` or be renamed, e.g. to a lean `LocaleConfig`.
 
-Rufen Sie nach diesem Schritt `http://localhost:8080/web/products/P-10` auf — die Seite sollte unverändert erscheinen,
-obwohl fast die gesamte Web-Konfiguration verschwunden ist.
+After this step, open `http://localhost:8080/web/products/P-10` -- the page should look unchanged, even though
+almost the entire web configuration is gone.
 
-## d) Runner & Properties auf Boot-Bordmittel umstellen
+## d) Switch runners & properties to what Boot provides
 
-Auch die selbstgebaute Runner-Mechanik und das manuelle Property-Handling ersetzen wir durch Boot-Standards.
+We also replace the home-made runner mechanism and the manual property handling with Boot standards.
 
-### Runner
+### Runners
 
-Bisher gibt es ein **eigenes** Interface `pizza.util.CommandLineRunner`, das in `PizzaApp` über einen
-`@EventListener(ContextRefreshedEvent.class)` aufgerufen wird; die CLI-Argumente werden dafür umständlich über das
-Record `CliArgs` als Bean in den Context "geparkt".
+So far there is a **custom** interface `pizza.util.CommandLineRunner`, which is invoked in `PizzaApp` via an
+`@EventListener(ContextRefreshedEvent.class)`; for this, the command-line arguments are laboriously "parked" in the
+context as a bean via the record `CliArgs`.
 
-➡️ Ersetzen Sie das eigene Interface durch Boots `org.springframework.boot.CommandLineRunner`. Boot ruft alle Beans
-dieses Typs nach dem Start automatisch auf und übergibt dabei die CLI-Argumente. Damit werden **überflüssig** und
-können gelöscht werden:
+➡️ Replace the custom interface with Boot's `org.springframework.boot.CommandLineRunner`. Boot calls all beans of this
+type automatically after startup and passes the command-line arguments. This makes the following **unnecessary**, and
+they can be deleted:
 
-- der `@EventListener(ContextRefreshedEvent.class)` in `PizzaApp`,
-- das Record `pizza.util.CliArgs`,
-- die Bedingung `pizza.util.CliArgsPresentCondition`.
+- the `@EventListener(ContextRefreshedEvent.class)` in `PizzaApp`,
+- the record `pizza.util.CliArgs`,
+- the condition `pizza.util.CliArgsPresentCondition`.
 
-➡️ `DataLoadRunner` und `LogicRunner` implementieren nun einfach `org.springframework.boot.CommandLineRunner`. Die
-`@Order`-Annotationen können Sie zur Steuerung der Reihenfolge beibehalten.
+➡️ `DataLoadRunner` and `LogicRunner` now simply implement `org.springframework.boot.CommandLineRunner`. You can keep
+the `@Order` annotations to control the order.
 
-> **Tipp:** `LogicRunner` gibt ASCII-Tabellen aus und gibt eine Bestellung auf — das wollen wir in den Tests **nicht**.
-> Früher verhinderte das die `CliArgsPresentCondition`. Ein Boot-idiomatischer Ersatz ist ein Profil: annotieren Sie
-> `LogicRunner` mit `@Profile("!test")` und aktivieren Sie in den Tests das Profil `test`
-> (`@ActiveProfiles("test")`).
+> **Tip:** `LogicRunner` prints ASCII tables and places an order -- we do **not** want that in the tests. This used to
+> be prevented by the `CliArgsPresentCondition`. An idiomatic Boot replacement is a profile: annotate `LogicRunner`
+> with `@Profile("!test")` and activate the profile `test` in the tests (`@ActiveProfiles("test")`).
 
 ### Properties
 
-➡️ Wandeln Sie das Record `pizza.order.OrderProperties` in eine `@ConfigurationProperties`-Klasse um
-(`prefix = "app.order"`) und aktivieren Sie sie per `@EnableConfigurationProperties(OrderProperties.class)` (oder
-`@ConfigurationPropertiesScan`). Boot bindet die Werte aus `application.properties` dann automatisch an die
-Record-Komponenten (`delivery-time-in-minutes`, `discount-days`, `discount-rate`).
+➡️ Turn the record `pizza.order.OrderProperties` into a `@ConfigurationProperties` class (`prefix = "app.order"`)
+and enable it with `@EnableConfigurationProperties(OrderProperties.class)` (or `@ConfigurationPropertiesScan`). Boot
+then binds the values from `application.properties` automatically to the record components
+(`delivery-time-in-minutes`, `discount-days`, `discount-rate`).
 
-➡️ Löschen Sie daraufhin die Klasse `PropertiesConfig` samt der `@Bean`-Methode und dem `@PropertySource`. Boot lädt
-`application.properties` ohnehin automatisch — ein explizites `@PropertySource` ist nicht mehr nötig.
+➡️ Then delete the class `PropertiesConfig` together with its `@Bean` method and the `@PropertySource`. Boot loads
+`application.properties` automatically anyway -- an explicit `@PropertySource` is no longer needed.
 
-## e) Tests anpassen
+## e) Adapt the tests
 
-Die vorhandenen Service-Tests (`CustomerServiceTest`, `OrderServiceTest`) booten den Context bisher mit
-`@SpringJUnitConfig(PizzaApp.class)`. Dieser Mechanismus ruft die (Boot-)`CommandLineRunner` **nicht** auf — die
-Testdaten würden also fehlen und `OrderServiceTest` scheitern.
+The existing service tests (`CustomerServiceTest`, `OrderServiceTest`) currently start the context with
+`@SpringJUnitConfig(PizzaApp.class)`. This mechanism does **not** call the (Boot) `CommandLineRunner`s -- so the
+test data would be missing and `OrderServiceTest` would fail.
 
-➡️ Stellen Sie die Tests auf `@SpringBootTest` um (ggf. mit `@ActiveProfiles("test")`, siehe Tipp in Aufgabe d).
-`@SpringBootTest` startet den Context wie die echte Anwendung über `SpringApplication` und führt damit auch den
-`DataLoadRunner` aus — die Testdaten stehen wieder zur Verfügung, während `LogicRunner` dank `@Profile("!test")`
-stumm bleibt.
+➡️ Switch the tests to `@SpringBootTest` (possibly with `@ActiveProfiles("test")`, see the tip in task d).
+`@SpringBootTest` starts the context like the real application via `SpringApplication` and therefore also runs the
+`DataLoadRunner` -- the test data is available again, while `LogicRunner` stays quiet thanks to `@Profile("!test")`.
 
-## Verifikation
+## Verification
 
-Wenn alles migriert ist:
+Once everything is migrated:
 
 ```bash
-./mvnw spring-boot:run      # oder: ./gradlew bootRun
+./mvnw spring-boot:run
 ```
 
-- Die Anwendung startet mit **eingebettetem Tomcat** auf Port `8080` (kein externer Server, kein `AppInitializer`
-  mehr).
-- `http://localhost:8080/web/products/P-10` zeigt weiterhin die Produktseite.
-- `./mvnw test` (bzw. `./gradlew test`) läuft grün.
+- The application starts with an **embedded Tomcat** on port `8080` (no external server, no `AppInitializer`
+  anymore).
+- `http://localhost:8080/web/products/P-10` still shows the product page.
+- `./mvnw test` passes.
 
-Vergleichen Sie zum Abschluss, **wie viel Code Sie gelöscht** haben — das ist die eigentliche Botschaft dieses
-Kapitels: Spring Boot ersetzt Ihren handgeschriebenen Infrastruktur-Code durch Konvention und Auto-Konfiguration.
+Finally, compare **how much code you have deleted** -- that is the real message of this chapter: Spring Boot replaces
+your hand-written infrastructure code with convention and auto-configuration.
