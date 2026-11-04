@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import pizza.util.CliArgs;
@@ -14,11 +13,7 @@ import pizza.util.CommandLineRunner;
 import java.util.List;
 
 @Configuration
-// WebConfig (@EnableWebMvc) must NOT land in this shared root context: it is also
-// used by the CLI main() and the (non-web) service tests, which have no ServletContext.
-// It is registered explicitly for the web tier in AppInitializer instead.
-@ComponentScan(excludeFilters = @ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE, classes = WebConfig.class))
+@ComponentScan
 public class PizzaApp {
 
     @Autowired
