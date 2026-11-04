@@ -12,10 +12,7 @@ bin/
 /target
 /maven.out
 
-# gradle
-.gradle/
 build/
-/gradle.out
 
 # claude code
 /.claude/settings.local.json
