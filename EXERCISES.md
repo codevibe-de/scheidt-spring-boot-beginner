@@ -1,73 +1,74 @@
-# Übungen zum Kapitel "030 - Konfiguration"
+# Exercises for chapter "030 - Configuration"
 
-## a) Laden der `application.properties` vorbereiten
+## a) Prepare loading `application.properties`
 
-Wir nutzen hier reines Spring (kein Spring Boot), daher wird die `application.properties` nicht automatisch geladen.
+We are using plain Spring here (no Spring Boot), so `application.properties` is not loaded automatically.
 
-Damit die Werte im `Environment` bzw. für `@Value` verfügbar sind:
+To make the values available in the `Environment` and for `@Value`:
 
-- erstellen Sie eine `application.properties` Datei
-- und binden Sie sie über eine `@Configuration`-Klasse mit `@PropertySource("classpath:application.properties")` ein
+- create an `application.properties` file
+- and include it via a `@Configuration` class with `@PropertySource("classpath:application.properties")`
 
-Diese Grundlage nutzen wir in den folgenden Übungen, um die Konfiguration zu setzen und auszulesen.
+We build on this in the following exercises to set and read the configuration.
 
-## b) OrderService konfigurierbar machen
+## b) Make the OrderService configurable
 
-Verändern Sie den `OrderService`, sodass die dort definierten Eigenschaften mittels Konfiguration gesetzt werden können:
+Change the `OrderService` so that the properties defined there can be set through configuration:
 
-* erwartete Lieferzeit in Minuten
-* die Wochentage, an denen der Rabatt gilt
-* der Rabattsatz (in %)
+* expected delivery time in minutes
+* the weekdays on which the discount applies
+* the discount rate (in %)
 
-Hinweis: Hierfür gibt es zwei Möglichkeiten:
+Note: there are two ways to do this:
 
-1. mittels `@Value`-Annotation am jeweiligen Feld
-2. oder über eine neue `OrderProperties` Klasse, welche die Werte aus dem `Environment` liest
+1. with the `@Value` annotation on each field
+2. or via a new `OrderProperties` class that reads the values from the `Environment`
 
-Bei letzterem Ansatz brauchen Sie die Felder der Klasse nicht mehr, da Sie ja dann diese über eine neue
-`OrderProperties` Klasse injectet bekommen.
+With the second approach you no longer need the fields in the class, since the values are injected through the new
+`OrderProperties` class.
 
-In der nächsten Übung c) werden die Werte in der `application.properties` Datei gesetzt und probeweise ausgegeben.
+In the next exercise c) the values are set in the `application.properties` file and printed as a check.
 
-## c) Ausgabe der Konfiguration
+## c) Print the configuration
 
-Ergänzen Sie den `OrderService` um eine Methode, in der die Konfiguration via `System.out`
-ausgegeben wird (damit wir sehen können, was gerade gilt).
+Add a method to the `OrderService` that prints the configuration via `System.out` (so we can see what currently
+applies).
 
-Lassen Sie Spring diese Methode automatisch beim Start ausführen. Wie ging das nochmal ...? :)
+Have Spring run this method automatically at startup. How did that work again ...? :)
 
-Setzen Sie Werte für die Konfiguration des `OrderService` in der `application.properties` Datei.
+Set values for the configuration of the `OrderService` in the `application.properties` file.
 
-Starten Sie nun die Anwendung und prüfen Sie die tatsächlich vorliegende Konfiguration -- wird der Wert aus der
-`application.properties` genutzt?
+Now start the application and check the configuration actually in effect -- is the value from
+`application.properties` used?
 
-## d) Konfiguration von außen
+## d) Configuration from outside
 
-Starten Sie Ihre Anwendung auf eine Art und Weise, dass nicht die Lieferzeit in Minuten aus den `application.properties`
-genutzt wird, sondern von außen durch einen anderen Wert überschrieben wird.
+Start your application in such a way that the delivery time in minutes is not taken from `application.properties`
+but overridden from outside with a different value.
 
-Hierfür können Sie eine Umgebungsvariable oder ein VM System Property nutzen.
+You can use an environment variable or a JVM system property for this.
 
-Wird der erwartete Wert ausgegeben?
+Is the expected value printed?
 
-## e) optionaler DataLoader
+## e) Optional DataLoader
 
-Machen Sie die Ausführung des DataLoaders konfigurierbar (an/aus) - oder sogar, welche DataLoader Bean ausgeführt werden
-soll (z.B. "none", "sample" or "csv").
+Make the execution of the DataLoader configurable (on/off) - or even which DataLoader bean should run (e.g. "none",
+"sample" or "csv").
 
-Hierfür gibt es mehrere Wege, die wir kennengelernt haben.
+There are several ways to do this that we have come across.
 
-Das Property, welches Sie hierfür definieren, können Sie mit dem bisherigen Wert "sample" in die `application.properties`
-einfügen und beim Ausführen z. B. mittels einer Umgebungsvariable überschreiben.
+You can add the property you define for this to `application.properties` with the current value "sample" and
+override it at runtime, e.g. with an environment variable.
 
-> Die Ausführung der `DataLoader` Bean wurde in einen neuen `DataLoadRunner` ausgelagert, um die Konfiguration zu
-> vereinfachen.
+> Running the `DataLoader` bean has been moved into a new `DataLoadRunner` to make the configuration easier.
 
-## f) Resource Inject
+## f) Resource injection -- optional
 
-Eine Kleinigkeit kann noch verbessert werden:
+> Spring's resource handling was not part of this training; this exercise is a bonus for the curious.
 
-Der CSV-DataLoader nutzt noch einen `ResourceLoader` um die Ressource der CSV-Datei zu bekommen. Eine Resource kann aber
-auch direkt in eine Bean injectet werden. Ändern Sie den CSV-DataLoader so ab, dass die Ressource direkt injectet wird.
+One small thing can still be improved:
 
-Dazu nutzen Sie die `@Value` Annotation und den `classpath:` Prefix.
+The CSV DataLoader still uses a `ResourceLoader` to get hold of the CSV file's resource. A resource can also be
+injected directly into a bean, though. Change the CSV DataLoader so that the resource is injected directly.
+
+Use the `@Value` annotation and the `classpath:` prefix for this.
