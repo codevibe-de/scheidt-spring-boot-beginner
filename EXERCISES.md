@@ -1,22 +1,21 @@
-# Übungen zu 005
+# Exercises for 005
 
-Schauen Sie sich die Klasse `PizzaApp` an. Diese ist noch unvollständig, führt allerdings schon
-einige Operationen aus und gibt deren Ergebnis auf `System.out` aus:
+Have a look at the class `PizzaApp`. It is still incomplete, but it already performs a few operations and prints their
+results to `System.out`:
 
-* Abfrage und Ausgabe des Produkts mit Id "P-10"
-* Abfrage und Ausgabe des Kunden mit Mobilnummer "+49 123 456789"
-* Platzierung einer Bestellung, konkret 3-mal die Pizza "P-10" und einmal den Salat "S-03"
+* looking up and printing the product with id "P-10"
+* looking up and printing the customer with mobile number "+49 123 456789"
+* placing an order, namely 3 times the pizza "P-10" and once the salad "S-03"
 
-Die Anwendung kann über die `main()` Methode gestartet werden, erzeugt dann aber noch Fehler.
+The application can be started via its `main()` method, but it still fails.
 
-Bei einem Blick in die Klasse ist der Grund dafür schnell klar -- es fehlen noch die
-Instanziierungen.
+A look into the class quickly shows why -- the instantiations are still missing.
 
-**Ergänzen Sie die fehlenden Teile, sodass die Anwendung fehlerfrei läuft und Ausgaben erzeugt.**
+**Add the missing parts so that the application runs without errors and produces output.**
 
-Hinweis: Wir arbeiten hier noch **nicht mit Spring**! Das kommt alles erst noch …
+Note: we are **not using Spring** here yet! That is all still to come …
 
-PS: Welchen Effekt hat wohl diese Code-Zeile?
+PS: What do you think this line of code does?
 
 ````
 new DataLoader.Sample(productService, customerService).run();
