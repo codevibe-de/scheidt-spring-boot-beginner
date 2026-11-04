@@ -24,11 +24,11 @@ The following has **already been done** for you -- you don't need to change the 
 - The Maven build (`pom.xml`) has been switched to Spring Boot:
   - It now uses `spring-boot-starter-parent` as its parent POM.
   - The individual `spring-*` dependencies and their versions have been replaced by **starters**:
-    `spring-boot-starter-jdbc`, `spring-boot-starter-aspectj` and (for tests) `spring-boot-starter-test`. The
-    versions are now managed by the Boot BOM -- explicit `<version>` entries are gone.
+    `spring-boot-starter-jdbc` and `spring-boot-starter-aspectj`. The versions are now managed by the Boot BOM --
+    explicit `<version>` entries are gone.
 
-From here on it's **your** turn. Work through the tasks in order and start the application or the tests after each
-step to see what Boot has already taken off your hands.
+From here on it's **your** turn. Work through the tasks in order and start the application after each step to see
+what Boot has already taken off your hands.
 
 ## a) Entry point: `@SpringBootApplication`
 
@@ -70,14 +70,10 @@ they can be deleted:
 
 - the `@EventListener(ContextRefreshedEvent.class)` in `PizzaApp`,
 - the record `pizza.util.CliArgs`,
-- the condition `pizza.util.CliArgsPresentCondition`.
+- the condition `pizza.util.CliArgsPresentCondition` and the `@Conditional` on `LogicRunner` that uses it.
 
 ➡️ `DataLoadRunner` and `LogicRunner` now simply implement `org.springframework.boot.CommandLineRunner`. You can keep
 the `@Order` annotations to control the order.
-
-> **Tip:** `LogicRunner` prints ASCII tables and places an order -- we do **not** want that in the tests. This used to
-> be prevented by the `CliArgsPresentCondition`. An idiomatic Boot replacement is a profile: annotate `LogicRunner`
-> with `@Profile("!test")` and activate the profile `test` in the tests (`@ActiveProfiles("test")`).
 
 ### Properties
 
@@ -89,16 +85,6 @@ then binds the values from `application.properties` automatically to the record 
 ➡️ Then delete the class `PropertiesConfig` together with its `@Bean` method and the `@PropertySource`. Boot loads
 `application.properties` automatically anyway -- an explicit `@PropertySource` is no longer needed.
 
-## d) Adapt the tests
-
-The existing service tests (`CustomerServiceTest`, `OrderServiceTest`) currently start the context with
-`@SpringJUnitConfig(PizzaApp.class)`. This mechanism does **not** call the (Boot) `CommandLineRunner`s -- so the
-test data would be missing and `OrderServiceTest` would fail.
-
-➡️ Switch the tests to `@SpringBootTest` (possibly with `@ActiveProfiles("test")`, see the tip in task c).
-`@SpringBootTest` starts the context like the real application via `SpringApplication` and therefore also runs the
-`DataLoadRunner` -- the test data is available again, while `LogicRunner` stays quiet thanks to `@Profile("!test")`.
-
 ## Verification
 
 Once everything is migrated:
@@ -109,7 +95,6 @@ Once everything is migrated:
 
 - The application starts, the `DataLoadRunner` loads the sample data and the `LogicRunner` prints its tables.
   There is no web server yet, so the application ends right afterwards.
-- `./mvnw test` passes.
 
 Finally, compare **how much code you have deleted** -- that is the real message of this chapter: Spring Boot replaces
 your hand-written infrastructure code with convention and auto-configuration.
