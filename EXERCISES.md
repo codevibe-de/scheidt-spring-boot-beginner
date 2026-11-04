@@ -1,21 +1,21 @@
 # Exercises for chapter "077 - Spring Boot"
 
 In this chapter we migrate the existing pizza application to **Spring Boot**. So far, all infrastructure has been
-wired up *by hand*: creating the `ApplicationContext`, starting a `DispatcherServlet` via the `AppInitializer`, the
-embedded `DataSource`, the complete Thymeleaf view resolution, and loading the properties. Spring Boot takes exactly
+wired up *by hand*: creating the `ApplicationContext`, the embedded `DataSource`, the runners and loading the
+properties. Spring Boot takes exactly
 this hand-written boilerplate off our hands through **starter dependencies** and **auto-configuration**.
 
-> **Starting point:** Some of this hand-written infrastructure (the web layer with Thymeleaf, the embedded
-> `DataSource`) comes from chapters of the full course that are not part of this training. You don't need to know it
+> **Starting point:** Some of this hand-written infrastructure (the embedded `DataSource` and the JDBC
+> repositories) comes from chapters of the full course that are not part of this training. You don't need to know it
 > in detail -- what matters here is seeing how much of it Boot makes unnecessary.
 
 The goal of this exercise is therefore not so much to write *new* code, but above all to **delete existing code** and
 replace it with what Boot provides out of the box. While cleaning up, pay attention to what happens *automatically*
 as soon as the corresponding starter is on the classpath.
 
-> **Note:** We deliberately focus on a few **core topics** of the migration (entry point, web layer, DataSource,
-> runners/properties). REST, which follows in the next chapter, is left out here -- the existing Thymeleaf controller
-> stays as an illustrative contrast.
+> **Note:** We deliberately focus on a few **core topics** of the migration (entry point, DataSource,
+> runners/properties). The application stays a command-line application here -- the web layer follows in the next
+> chapter together with REST.
 
 ## Setup (already prepared)
 
@@ -24,11 +24,8 @@ The following has **already been done** for you -- you don't need to change the 
 - The Maven build (`pom.xml`) has been switched to Spring Boot:
   - It now uses `spring-boot-starter-parent` as its parent POM.
   - The individual `spring-*` dependencies and their versions have been replaced by **starters**:
-    `spring-boot-starter-webmvc`, `spring-boot-starter-thymeleaf`, `spring-boot-starter-jdbc`,
-    `spring-boot-starter-aspectj` and (for tests) `spring-boot-starter-test`. The versions are now managed by the
-    Boot BOM -- explicit `<version>` entries are gone.
-  - The packaging has been changed from `war` to `jar`; `jakarta.servlet-api` (scope `provided`),
-    `failOnMissingWebXml` and the explicit `-parameters` compiler flag are no longer needed (Boot brings all of that).
+    `spring-boot-starter-jdbc`, `spring-boot-starter-aspectj` and (for tests) `spring-boot-starter-test`. The
+    versions are now managed by the Boot BOM -- explicit `<version>` entries are gone.
 
 From here on it's **your** turn. Work through the tasks in order and start the application or the tests after each
 step to see what Boot has already taken off your hands.
@@ -46,9 +43,6 @@ Turn `PizzaApp` into a real Spring Boot application:
 SpringApplication.run(PizzaApp.class, args);
 ```
 
-➡️ Delete the class `AppInitializer`. Its job -- starting a `DispatcherServlet` together with an embedded servlet
-container -- is now done by the auto-configuration of `spring-boot-starter-webmvc` (embedded Tomcat on port `8080`).
-
 ## b) `DataSource` via auto-configuration
 
 ➡️ Delete the class `EmbeddedDataSourceConfig`.
@@ -60,31 +54,7 @@ the root of the classpath at startup -- exactly what we did by hand before with 
 > **Tip:** Stay sceptical and look at the log during startup -- Boot reports the H2 `DataSource` it created and the
 > execution of `schema.sql` there.
 
-## c) Slim down the web layer
-
-The class `WebConfig` is the biggest chunk -- and most of it can be **deleted**:
-
-➡️ Remove the annotation `@EnableWebMvc`.
-
-> ⚠️ **Important / classic trap:** `@EnableWebMvc` switches Boot's MVC auto-configuration **off**. As long as the
-> annotation stays, neither the Thymeleaf views nor the static resources are configured automatically.
-
-➡️ Delete the three Thymeleaf beans (`templateResolver`, `templateEngine`, `viewResolver`). The starter
-`spring-boot-starter-thymeleaf` configures the whole chain `TemplateResolver → TemplateEngine → ViewResolver` itself
--- and by default expects the templates exactly where they already are: `src/main/resources/templates/` (prefix
-`classpath:/templates/`, suffix `.html`).
-
-➡️ Delete the method `addResourceHandlers(...)`. Boot serves static content from `src/main/resources/static/`
-automatically -- so `bootstrap-5.3.3.css` is reachable without any further effort.
-
-➡️ **What remains** is just the `LocaleResolver` bean (fixed locale `Locale.GERMANY`, so that the euro sign is
-rendered correctly). There is no matching auto-configuration for this one bean -- so it stays. Consider whether the
-remaining configuration class should still be called `WebConfig` or be renamed, e.g. to a lean `LocaleConfig`.
-
-After this step, open `http://localhost:8080/web/products/P-10` -- the page should look unchanged, even though
-almost the entire web configuration is gone.
-
-## d) Switch runners & properties to what Boot provides
+## c) Switch runners & properties to what Boot provides
 
 We also replace the home-made runner mechanism and the manual property handling with Boot standards.
 
@@ -119,13 +89,13 @@ then binds the values from `application.properties` automatically to the record 
 ➡️ Then delete the class `PropertiesConfig` together with its `@Bean` method and the `@PropertySource`. Boot loads
 `application.properties` automatically anyway -- an explicit `@PropertySource` is no longer needed.
 
-## e) Adapt the tests
+## d) Adapt the tests
 
 The existing service tests (`CustomerServiceTest`, `OrderServiceTest`) currently start the context with
 `@SpringJUnitConfig(PizzaApp.class)`. This mechanism does **not** call the (Boot) `CommandLineRunner`s -- so the
 test data would be missing and `OrderServiceTest` would fail.
 
-➡️ Switch the tests to `@SpringBootTest` (possibly with `@ActiveProfiles("test")`, see the tip in task d).
+➡️ Switch the tests to `@SpringBootTest` (possibly with `@ActiveProfiles("test")`, see the tip in task c).
 `@SpringBootTest` starts the context like the real application via `SpringApplication` and therefore also runs the
 `DataLoadRunner` -- the test data is available again, while `LogicRunner` stays quiet thanks to `@Profile("!test")`.
 
@@ -137,9 +107,8 @@ Once everything is migrated:
 ./mvnw spring-boot:run
 ```
 
-- The application starts with an **embedded Tomcat** on port `8080` (no external server, no `AppInitializer`
-  anymore).
-- `http://localhost:8080/web/products/P-10` still shows the product page.
+- The application starts, the `DataLoadRunner` loads the sample data and the `LogicRunner` prints its tables.
+  There is no web server yet, so the application ends right afterwards.
 - `./mvnw test` passes.
 
 Finally, compare **how much code you have deleted** -- that is the real message of this chapter: Spring Boot replaces
