@@ -1,54 +1,52 @@
-# Übungen zum Kapitel "080 - RESTful API"
+# Exercises for chapter "080 - RESTful API"
 
 ## a) Clients
 
 ### Insomnia
 
-Bei Bedarf können Sie den "Insomnia" Rest Client installieren: https://insomnia.rest/
+If you like, you can install the "Insomnia" REST client: https://insomnia.rest/
 
-Im Projekt ist ab diesem Branch ein exportierter Insomnia Workspace vorhanden, den Sie in das Tool
-importieren können. Damit können Sie dann komfortabel die später programmierten Endpunkte anfragen.
+From this branch on, the project contains an exported Insomnia workspace that you can import into the tool. It lets
+you conveniently call the endpoints you will program later.
 
-### Intellij
+### IntelliJ
 
-Ebenfalls findet sich nun die Datei `requests.http` im Projektwurzelverzeichnis. Das können Sie in
-Intellij **Ultimate** öffnen und von dort die Requests direkt mit dem grünen Pfeil ausführen lassen.
+There is now also a file `requests.http` in the project root directory. You can open it in IntelliJ **Ultimate** and
+run the requests directly from there with the green arrow.
 
-### Curl
+### curl
 
-Das Kommandozeilen-Tool `curl` kann wie folgt genutzt werden:
+The command-line tool `curl` can be used as follows:
 
-- einfaches GET auf eine Adresse:
+- a simple GET on an address:
   ````shell
   curl http://localhost:8080/products
   ````
-- POST mit Body, dessen Inhalt aus einer Datei gelesen werden soll:
+- a POST with a body whose content is read from a file:
   ````shell
   curl -d @<filename> http://localhost:8080/orders
   ````
-- DELETE mit Query-String:
+- a DELETE with a query string:
   ````shell
   curl -X DELETE http://localhost:8080/products?namePrefix=Pizza
   ````
 
-### Sonstige Clients
+### Other clients
 
-Alternativ können Sie zum Testen der Endpunkte natürlich auch andere Tools wie z.B. Postman nehmen.
+Of course you can also use other tools such as Postman to test the endpoints.
 
 ## b) OrderRestController
 
-Erstellen Sie einen API-Endpunkt `/orders/greeting` der für ein GET eine Begrüßung als String
-zurückgibt.
+Create an API endpoint `/orders/greeting` that returns a greeting as a string for a GET.
 
-Testen Sie die URL in Ihrem Browser: http://localhost:8080/orders/greeting
+Test the URL in your browser: http://localhost:8080/orders/greeting
 
 ## c) CustomerRestController
 
-Erstellen Sie die folgenden API-Endpunkte:
+Create the following API endpoints:
 
-* `GET /customers`, der alle Kunden zurückgibt
-* `POST /customers`, der einen neuen Kunden anlegt. Der Kunde ist durch folgenden JSON Inhalt
-  definiert:
+* `GET /customers`, which returns all customers
+* `POST /customers`, which creates a new customer. The customer is defined by the following JSON content:
 
 ````json
 {
@@ -62,25 +60,23 @@ Erstellen Sie die folgenden API-Endpunkte:
 }
 ````
 
-`Customer` selbst eignet sich nicht als `@RequestBody`: Die Klasse hat zwei Konstruktoren und
-keinen Default-Konstruktor, Jackson weiß daher nicht, wie es sie erzeugen soll. Legen Sie stattdessen
-einen Record `CreateCustomerRequest` mit den drei Feldern aus dem JSON an, nehmen Sie diesen in
-der Controller-Methode entgegen und erzeugen Sie daraus den `Customer` für den `CustomerService`.
+`Customer` itself is not suitable as a `@RequestBody`: the class has two constructors and no default constructor, so
+Jackson doesn't know how to create it. Instead, create a record `CreateCustomerRequest` with the three fields from the
+JSON, accept it in the controller method and create the `Customer` for the `CustomerService` from it.
 
 ## d) ProductRestController
 
-Erstellen Sie die folgenden API-Endpunkte:
+Create the following API endpoints:
 
-* `GET /products`, der alle Produkte zurückgibt
-* `GET /products/{id}`, der das Produkt mit der angegebenen Id zurückgibt (Nutzung `@PathVariable`)
+* `GET /products`, which returns all products
+* `GET /products/{id}`, which returns the product with the given id (using `@PathVariable`)
 
-## e) Erweiterung OrderRestController
+## e) Extend the OrderRestController
 
-Erstellen Sie zusätzlich die folgenden API-Endpunkte:
+Also create the following API endpoints:
 
-* `GET /orders`, der alle Bestellungen zurückgibt
-* `POST /orders`, durch den eine neue Bestellung aufgegeben werden kann. Die Bestellung ist durch
-  folgenden JSON Inhalt definiert:
+* `GET /orders`, which returns all orders
+* `POST /orders`, through which a new order can be placed. The order is defined by the following JSON content:
 
 ````json
 {
@@ -93,6 +89,5 @@ Erstellen Sie zusätzlich die folgenden API-Endpunkte:
 }
 ````
 
-Legen Sie für diesen Body eine Klasse oder einen Record `OrderRequest` mit den Feldern `phoneNumber`
-(`String`) und `itemQuantities` (`Map<String, Integer>`, Produkt-Id auf Menge) an und nehmen Sie ihn
-in der Controller-Methode per `@RequestBody` entgegen.
+Create a class or a record `OrderRequest` for this body with the fields `phoneNumber` (`String`) and `itemQuantities`
+(`Map<String, Integer>`, product id to quantity) and accept it in the controller method with `@RequestBody`.
