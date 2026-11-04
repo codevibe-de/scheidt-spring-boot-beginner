@@ -1,52 +1,49 @@
-# Übungen zum Kapitel "130 - Testen mit Boot"
+# Exercises for chapter "130 - Testing with Boot"
 
-Bisher starten alle Tests unter `src/test/java` den kompletten Kontext mit `@SpringBootTest`. Das
-ist gründlich, aber langsam, und die Tests hängen an den Beispieldaten des DataLoader. In dieser
-Übung testen Sie den `OrderService` ohne Spring, mit Mocks im Kontext, und das `OrderRepository`
-in einem Slice.
+So far, all tests under `src/test/java` start the complete context with `@SpringBootTest`. That is
+thorough but slow, and the tests depend on the sample data of the DataLoader. In this exercise you
+test the `OrderService` without Spring, with mocks in the context, and the `OrderRepository` in a
+slice.
 
-Die Tests laufen auf diesem Branch grün; die beiden Testklassen für a) und b) sind als Gerüst
-vorbereitet, ihre Methoden noch leer.
+The tests pass on this branch; the two test classes for a) and b) are prepared as skeletons, their
+methods still empty.
 
-## a) Unit-Test mit Mockito
+## a) Unit test with Mockito
 
-Vervollständigen Sie `pizza.order.OrderServiceUnitTest`. Der Test kommt ganz ohne Spring aus: Er
-erzeugt den `OrderService` selbst mit `new`, seine Abhängigkeiten sind Mocks.
+Complete `pizza.order.OrderServiceUnitTest`. The test does without Spring entirely: it creates the
+`OrderService` itself with `new`, its dependencies are mocks.
 
-* Lassen Sie die drei Mocks von Mockito erzeugen: `@ExtendWith(MockitoExtension.class)` an der
-  Klasse, `@Mock` an den Feldern.
-* Programmieren Sie die Mocks mit `Mockito.when(...).thenReturn(...)` bzw. `.thenThrow(...)`. Für
-  `save()` gibt `.thenAnswer(invocation -> invocation.getArgument(0))` die übergebene Bestellung
-  zurück.
-* Prüfen Sie mit `Mockito.verify(...)`, dass der Zähler erhöht und die Bestellung gespeichert
-  wurde, und im Fehlerfall mit `Mockito.verifyNoInteractions(...)`, dass das `OrderRepository`
-  gar nicht benutzt wurde.
+* Let Mockito create the three mocks: `@ExtendWith(MockitoExtension.class)` on the class, `@Mock`
+  on the fields.
+* Program the mocks with `Mockito.when(...).thenReturn(...)` or `.thenThrow(...)`. For `save()`,
+  `.thenAnswer(invocation -> invocation.getArgument(0))` returns the order that was passed in.
+* Use `Mockito.verify(...)` to check that the counter was increased and the order was saved, and in
+  the failure case use `Mockito.verifyNoInteractions(...)` to check that the `OrderRepository` was
+  not used at all.
 
-Warum setzt `setUp()` die Id des Kunden per `ReflectionTestUtils`? Was passiert ohne?
+Why does `setUp()` set the customer's id via `ReflectionTestUtils`? What happens without it?
 
-Was meldet Mockito, wenn Sie in `setUp()` etwas programmieren, das ein Test nicht braucht?
+What does Mockito report if you program something in `setUp()` that a test does not need?
 
-## b) Mocks und Spies im Kontext
+## b) Mocks and spies in the context
 
-Vervollständigen Sie `pizza.order.OrderServiceMockBeanTest`. Hier läuft der volle Kontext, aber
-zwei Beans werden ausgetauscht:
+Complete `pizza.order.OrderServiceMockBeanTest`. Here the full context runs, but two beans are
+replaced:
 
-* der `ProductService` durch einen Mock mit `@MockitoBean`: Er liefert den Preis, den der Test
-  vorgibt
-* der `CustomerService` durch einen Spy mit `@MockitoSpyBean`: Er ruft die echten Methoden auf,
-  zeichnet die Aufrufe aber auf
+* the `ProductService` by a mock with `@MockitoBean`: it returns the price the test specifies
+* the `CustomerService` by a spy with `@MockitoSpyBean`: it calls the real methods but records the
+  calls
 
-Prüfen Sie im zweiten Test, dass `increaseOrderCount()` auch bei einer gescheiterten Bestellung
-genau einmal aufgerufen wird (`Mockito.verify(customerService, Mockito.times(1))`) und dass der
-Zähler in der Datenbank wirklich gestiegen ist. Macht der Spy die Transaktion aus Kapitel 120 mit?
+In the second test, check that `increaseOrderCount()` is called exactly once even for a failed order
+(`Mockito.verify(customerService, Mockito.times(1))`) and that the counter in the database has
+really gone up. Does the spy take part in the transaction from chapter 120?
 
-Führen Sie danach alle Tests aus und zählen Sie im Log die Zeilen `Started ...Test in`. Wie viele
-Kontexte startet Spring, und warum?
+Then run all tests and count the lines `Started ...Test in` in the log. How many contexts does
+Spring start, and why?
 
-Tipp: Mit dem Logger `org.springframework.test.context.cache` auf `DEBUG` schreibt Spring nach
-jeder Testklasse eine Statistik des Kontext-Caches (`size`, `hitCount`, `missCount`). Am
-einfachsten setzen Sie ihn über eine Umgebungsvariable, die Maven und Gradle an die Tests
-weiterreichen:
+Hint: with the logger `org.springframework.test.context.cache` at `DEBUG`, Spring writes statistics
+of the context cache (`size`, `hitCount`, `missCount`) after every test class. The easiest way to
+set it is an environment variable, which Maven passes on to the tests:
 
 ````shell
 # macOS, Linux
@@ -56,20 +53,18 @@ LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_TEST_CONTEXT_CACHE=DEBUG ./mvnw test
 $env:LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_TEST_CONTEXT_CACHE="DEBUG"; ./mvnw test
 ````
 
-Mit Maven geht auch `./mvnw test -Dlogging.level.org.springframework.test.context.cache=DEBUG`;
-Gradle reicht `-D` nicht an die Tests weiter. Gradle zeigt die Ausgabe der Tests außerdem nicht in
-der Konsole, sie steht im Bericht `build/reports/tests/test/index.html`. In IntelliJ tragen Sie
-die Variable in der Run Configuration unter *Environment variables* ein.
+`./mvnw test -Dlogging.level.org.springframework.test.context.cache=DEBUG` works as well. In
+IntelliJ, enter the variable in the run configuration under *Environment variables*.
 
-## c) Ein Slice für JPA
+## c) A slice for JPA
 
-Schreiben Sie einen Test `pizza.order.OrderRepositoryTest` mit `@DataJpaTest` für die beiden
-Abfragen `findByCustomerPhoneNumber()` und `sumTotalPriceByPhoneNumber()`.
+Write a test `pizza.order.OrderRepositoryTest` with `@DataJpaTest` for the two queries
+`findByCustomerPhoneNumber()` and `sumTotalPriceByPhoneNumber()`.
 
-Seit Spring Boot 4 liegt `@DataJpaTest` in einem eigenen Modul. Ergänzen Sie in der `pom.xml`
-(bzw. `build.gradle`) den Starter `spring-boot-starter-data-jpa-test` mit Scope `test`.
+Since Spring Boot 4, `@DataJpaTest` lives in a module of its own. Add the starter
+`spring-boot-starter-data-jpa-test` with scope `test` to the `pom.xml`.
 
-Legen Sie die Testdaten in einer `@BeforeEach`-Methode mit dem `TestEntityManager` an, etwa so:
+Create the test data in a `@BeforeEach` method with the `TestEntityManager`, for example like this:
 
 ````java
 customer = entityManager.persist(new Customer("Trans Action", null, "0931 123456"));
@@ -79,20 +74,20 @@ entityManager.flush();
 entityManager.clear();
 ````
 
-Wozu dienen `flush()` und `clear()`?
+What are `flush()` and `clear()` for?
 
-Beantworten Sie anhand des Logs und eines Tests mit `orderRepository.count()`:
+Answer with the help of the log and a test using `orderRepository.count()`:
 
-* Gegen welche Datenbank läuft der Test, und wer legt dort das Schema an?
-* Gibt es die Beispieldaten des DataLoader?
-* Warum sieht ein Test die Daten des vorigen nicht?
+* Which database does the test run against, and who creates the schema there?
+* Is the sample data of the DataLoader there?
+* Why doesn't a test see the data of the previous one?
 
 ## d) Bonus: Testcontainers
 
-Diesen Teil können Sie nur bearbeiten, wenn auf Ihrem Rechner Docker läuft.
+You can only do this part if Docker is running on your machine.
 
-Schreiben Sie einen Test `pizza.PostgresIntegrationTest`, der die Anwendung gegen ein echtes
-PostgreSQL in einem Container startet. Sie brauchen dafür mit Scope `test`:
+Write a test `pizza.PostgresIntegrationTest` that starts the application against a real PostgreSQL
+in a container. For this you need, with scope `test`:
 
 * `org.springframework.boot:spring-boot-testcontainers`
 * `org.testcontainers:testcontainers-junit-jupiter`
@@ -100,7 +95,7 @@ PostgreSQL in einem Container startet. Sie brauchen dafür mit Scope `test`:
 * `org.postgresql:postgresql`
 * `org.flywaydb:flyway-database-postgresql`
 
-Die Versionen verwaltet Spring Boot. Der Container steht als statisches Feld in der Testklasse:
+Spring Boot manages the versions. The container is a static field in the test class:
 
 ````java
 @SpringBootTest
@@ -113,5 +108,5 @@ class PostgresIntegrationTest {
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
 ````
 
-Prüfen Sie, dass Flyway die drei Migrationen auf PostgreSQL anwendet und dass eine Bestellung
-gespeichert wird. Woher kennt Spring die JDBC-URL der Datenbank im Container?
+Check that Flyway applies the three migrations to PostgreSQL and that an order is saved. How does
+Spring know the JDBC URL of the database in the container?
