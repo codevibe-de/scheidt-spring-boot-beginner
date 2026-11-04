@@ -1,37 +1,37 @@
-# Übungen zum Kapitel "150 - REST-Clients"
+# Exercises for chapter "150 - REST Clients"
 
-Die Pizza-App rechnet heute für jede Bestellung mit derselben Lieferzeit, dem Wert von
-`app.order.delivery-time-in-minutes`. In dieser Übung fragt sie stattdessen einen externen
-Analysedienst, den Lieferzeit-Dienst, der die Lieferzeit aus der Postleitzahl des Kunden schätzt.
+Currently the pizza app calculates every order with the same delivery time, the value of
+`app.order.delivery-time-in-minutes`. In this exercise it asks an external analysis service
+instead, the delivery time service, which estimates the delivery time from the customer's postal
+code.
 
-Der Lieferzeit-Dienst liegt als einzelne Java-Datei im Projekt und braucht keinen Build. Starten Sie
-ihn in einem eigenen Terminal im Projektverzeichnis:
+The delivery time service is a single Java file in the project and needs no build. Start it in a
+separate terminal in the project directory:
 
 ````shell
 java src/services/java/DeliveryTimeService.java
 ````
 
-Er läuft auf Port 8081 und beantwortet `GET /estimates?postalCode=40302` mit
-`{"postalCode":"40302","minutes":27}`. Er hat nur Daten für die Gebiete 40, 88, 97 und 99 (die ersten
-beiden Ziffern der Postleitzahl), für alle anderen antwortet er mit 404. Das Gebiet 99 ist
-überlastet: Dort kommt die Antwort erst nach 5 Sekunden.
+It runs on port 8081 and answers `GET /estimates?postalCode=40302` with
+`{"postalCode":"40302","minutes":27}`. It only has data for the areas 40, 88, 97 and 99 (the first
+two digits of the postal code); for all others it answers with 404. Area 99 is overloaded: the
+answer only comes after 5 seconds.
 
-Probieren Sie jeden Schritt mit den Anfragen in `requests.http` aus, die Anfragen zu diesem Kapitel
-stehen unten in der Datei. Die Tests unter `src/test/java` müssen nach jedem Schritt grün bleiben.
+Try out every step with the requests in `requests.http`; the requests for this chapter are at the
+bottom of the file. The tests under `src/test/java` must stay green after every step.
 
-Vorbereitet sind die Klasse `pizza.delivery.DeliveryTimeClient`, die schon in den `OrderService`
-injiziert wird, die Methode `getDeliveryTimeInMinutes()` im `OrderService` und die Property
+Prepared are the class `pizza.delivery.DeliveryTimeClient`, which is already injected into the
+`OrderService`, the method `getDeliveryTimeInMinutes()` in the `OrderService` and the property
 `app.delivery-time.base-url`.
 
-## a) Die Lieferzeit beim Lieferzeit-Dienst erfragen
+## a) Asking the delivery time service for the delivery time
 
-* Ergänzen Sie in der `pom.xml` (bzw. `build.gradle`) den Starter `spring-boot-starter-restclient`.
-* Legen Sie ein Record `pizza.delivery.DeliveryEstimate` mit den Feldern `postalCode` und `minutes`
-  an.
-* Lassen Sie sich im Konstruktor von `DeliveryTimeClient` einen `RestClient.Builder` und die Property
-  `app.delivery-time.base-url` injizieren. Bauen Sie daraus einen `RestClient` mit dieser Basis-URL.
-* Implementieren Sie `getDeliveryTimeInMinutes()`: `GET /estimates?postalCode=...` aufrufen, die
-  Antwort als `DeliveryEstimate` lesen und `minutes` zurückgeben.
+* Add the starter `spring-boot-starter-restclient` to the `pom.xml`.
+* Create a record `pizza.delivery.DeliveryEstimate` with the fields `postalCode` and `minutes`.
+* Have a `RestClient.Builder` and the property `app.delivery-time.base-url` injected into the
+  constructor of `DeliveryTimeClient`. Use them to build a `RestClient` with this base URL.
+* Implement `getDeliveryTimeInMinutes()`: call `GET /estimates?postalCode=...`, read the response
+  as `DeliveryEstimate` and return `minutes`.
 
 ````java
 DeliveryEstimate estimate = restClient.get()
@@ -40,39 +40,40 @@ DeliveryEstimate estimate = restClient.get()
         .body(DeliveryEstimate.class);
 ````
 
-* Rufen Sie den `DeliveryTimeClient` in `OrderService#getDeliveryTimeInMinutes()` mit der Postleitzahl
-  aus der Adresse des Kunden auf. Kunden ohne Adresse bekommen weiter den Wert aus der Property.
+* Call the `DeliveryTimeClient` in `OrderService#getDeliveryTimeInMinutes()` with the postal code
+  from the customer's address. Customers without an address still get the value from the property.
 
-Bestellen Sie für Enrico Pallazzo (Postleitzahl 40302). Was steht in `estimatedTimeOfDelivery`, und
-was zeigt das Terminal des Lieferzeit-Dienstes?
+Place an order for Enrico Pallazzo (postal code 40302). What is in `estimatedTimeOfDelivery`, and
+what does the terminal of the delivery time service show?
 
-## b) Wenn der Lieferzeit-Dienst nicht antwortet
+## b) When the delivery time service does not answer
 
-Probieren Sie drei Fälle aus und beobachten Sie, was der Aufrufer von `POST /orders` bekommt:
+Try out three cases and watch what the caller of `POST /orders` gets:
 
-* der Kunde aus dem Gebiet 12 (`+49 30 12345` in `requests.http`, erst anlegen)
-* der Lieferzeit-Dienst ist gestoppt
-* der Kunde aus dem Gebiet 99 (`+49 361 99084`, erst anlegen)
+* the customer from area 12 (`+49 30 12345` in `requests.http`, create it first)
+* the delivery time service is stopped
+* the customer from area 99 (`+49 361 99084`, create it first)
 
-Eine Bestellung soll nicht daran scheitern, dass der Lieferzeit-Dienst keine Lieferzeit liefert. Fangen
-Sie im `OrderService` die `RestClientException` ab, schreiben Sie eine Warnung ins Log und nehmen Sie
-den Wert aus `app.order.delivery-time-in-minutes`.
+An order should not fail because the delivery time service does not deliver a delivery time. Catch
+the `RestClientException` in the `OrderService`, write a warning to the log and take the value from
+`app.order.delivery-time-in-minutes`.
 
-Gegen den langsamen Fall hilft das noch nicht. Setzen Sie in der `application.properties` einen
-Read-Timeout für alle HTTP-Clients:
+That does not help with the slow case yet. Set a read timeout for all HTTP clients in
+`application.properties`:
 
 ````properties
 spring.http.clients.read-timeout=2s
 ````
 
-Wie lange dauert die Bestellung im Gebiet 99 jetzt?
+How long does the order in area 99 take now?
 
-`placeOrder()` ist `@Transactional`, und der Aufruf des Lieferzeit-Dienstes passiert mitten in der
-Transaktion. Was bedeutet das, wenn der Lieferzeit-Dienst langsam ist? Wo gehört der Aufruf besser hin?
+`placeOrder()` is `@Transactional`, and the call to the delivery time service happens in the middle
+of the transaction. What does that mean when the delivery time service is slow? Where would the
+call be better placed?
 
-## c) Bonus: derselbe Client als HTTP-Interface
+## c) Bonus: the same client as an HTTP interface
 
-Legen Sie ein Interface `pizza.delivery.DeliveryTimeApi` an:
+Create an interface `pizza.delivery.DeliveryTimeApi`:
 
 ````java
 @HttpExchange("/estimates")
@@ -83,29 +84,29 @@ public interface DeliveryTimeApi {
 }
 ````
 
-Spring Boot erzeugt die Implementierung, wenn Sie das Interface an `PizzaApp` importieren:
+Spring Boot creates the implementation when you import the interface on `PizzaApp`:
 
 ````java
 @ImportHttpServices(group = "delivery-time", types = DeliveryTimeApi.class)
 ````
 
-Die Basis-URL der Gruppe `delivery` setzen Sie in der `application.properties`:
+Set the base URL of the group `delivery-time` in `application.properties`:
 
 ````properties
 spring.http.serviceclient.delivery-time.base-url=${app.delivery-time.base-url}
 ````
 
-Lassen Sie `DeliveryTimeClient` statt des `RestClient` die `DeliveryTimeApi` benutzen. Gilt der
-Read-Timeout aus b) auch hier?
+Let `DeliveryTimeClient` use the `DeliveryTimeApi` instead of the `RestClient`. Does the read
+timeout from b) apply here too?
 
-## d) Bonus: ein Interface für Controller und Client
+## d) Bonus: one interface for controller and client
 
-Ziehen Sie aus dem `ProductRestController` ein Interface `pizza.product.ProductApi` heraus, das die
-HTTP-Abbildung mit `@HttpExchange("/products")` und `@GetExchange` beschreibt, und lassen Sie den
-Controller es implementieren, ohne eigene `@GetMapping`s.
+Extract an interface `pizza.product.ProductApi` from the `ProductRestController` that describes the
+HTTP mapping with `@HttpExchange("/products")` and `@GetExchange`, and let the controller implement
+it, without `@GetMapping`s of its own.
 
-Schreiben Sie einen Test `ProductApiTest` mit `@SpringBootTest(webEnvironment = RANDOM_PORT)`, der
-mit demselben Interface als Client gegen die laufende Anwendung ein Produkt abruft:
+Write a test `ProductApiTest` with `@SpringBootTest(webEnvironment = RANDOM_PORT)` that uses the
+same interface as a client to fetch a product from the running application:
 
 ````java
 RestClient restClient = RestClient.create("http://localhost:" + port);
@@ -115,4 +116,4 @@ ProductApi client = HttpServiceProxyFactory
         .createClient(ProductApi.class);
 ````
 
-Für welche APIs eignet sich ein gemeinsames Interface, für welche nicht?
+For which APIs is a shared interface a good fit, and for which not?
